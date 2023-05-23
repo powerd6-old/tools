@@ -2,8 +2,13 @@
 name = "tools"
 description = "A collection of tools to support the creation of the powerd6 system."
 version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+
+[workspace]
+members = [
+    "module",
+]
+
+[workspace.package]
+edition = "2021"
