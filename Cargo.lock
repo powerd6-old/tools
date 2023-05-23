@@ -595,6 +595,9 @@ name = "module"
 version = "0.1.0"
 dependencies = [
  "jsonschema",
+ "serde",
+ "serde_json",
+ "url",
 ]
 
 [[package]]
@@ -1072,6 +1075,7 @@ dependencies = [
  "form_urlencoded",
  "idna",
  "percent-encoding",
+ "serde",
 ]
 
 [[package]]
