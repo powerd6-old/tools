@@ -6,9 +6,10 @@ version = "0.1.0"
 [dependencies]
 
 [workspace]
-members = [
-    "module",
-]
+members = ["module"]
 
 [workspace.package]
 edition = "2021"
+
+[workspace.dependencies]
+jsonschema = { version = "0.17.0", features = ["draft202012"] }

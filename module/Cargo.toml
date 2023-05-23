@@ -5,3 +5,4 @@ version = "0.1.0"
 edition.workspace = true
 
 [dependencies]
+jsonschema = { workspace = true, features = ["draft202012"] }
