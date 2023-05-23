@@ -1,5 +1,9 @@
 {
     "files.exclude" : {
         "**/*.profraw": true,
-    }
+    },
+    "cSpell.words": [
+        "jsonschema",
+        "powerd6"
+    ]
 }
