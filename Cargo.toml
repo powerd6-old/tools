@@ -1,5 +1,6 @@
 [package]
 name = "tools"
+description = "A collection of tools to support the creation of the powerd6 system."
 version = "0.1.0"
 edition = "2021"
 
