@@ -3,8 +3,6 @@ name = "tools"
 description = "A collection of tools to support the creation of the powerd6 system."
 version = "0.1.0"
 
-[dependencies]
-
 [workspace]
 members = ["fs", "module"]
 
@@ -15,4 +13,5 @@ edition = "2021"
 jsonschema = { version = "0.17.0", features = ["draft202012"] }
 serde = "1.0.163"
 serde_json = "1.0.96"
+testdir = "0.7.3"
 url = { version = "2.3.1", features =["serde"] }
