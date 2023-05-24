@@ -1,7 +1,10 @@
 use std::path::PathBuf;
 use testdir::testdir;
 
-use fs::{Entry, EntrySet, FileSystem, FileSystemError};
+use fs::{
+    Entry, EntrySet, FileSystem, FileSystemError, CONTENTS_DIRECTORY, MODULE, TYPES_DIRECTORY,
+    UNDERSCORE_FILE_NAME,
+};
 
 fn create_file(path: &PathBuf) -> PathBuf {
     std::fs::write(path, "").expect("File was created correctly");
@@ -38,7 +41,7 @@ fn it_fails_on_empty_directory() {
 #[test]
 fn it_works_with_only_module_file() {
     let dir: PathBuf = testdir!();
-    let module_file = create_file(&dir.join("module.json"));
+    let module_file = create_file(&dir.join(format!("{}.json", MODULE)));
 
     assert_eq!(
         FileSystem::try_from(dir.clone()).unwrap(),
@@ -49,8 +52,8 @@ fn it_works_with_only_module_file() {
 #[test]
 fn it_works_with_only_module_as_directory() {
     let dir: PathBuf = testdir!();
-    let module_dir = create_directory(&dir.join("module"));
-    let module_root = create_file(&module_dir.join("_.json"));
+    let module_dir = create_directory(&dir.join(format!("{}", MODULE)));
+    let module_root = create_file(&module_dir.join(format!("{}.json", UNDERSCORE_FILE_NAME)));
     let module_extra_file = create_file(&module_dir.join("description.txt"));
 
     assert_eq!(
@@ -68,11 +71,11 @@ fn it_works_with_only_module_as_directory() {
 #[test]
 fn it_works_with_types() {
     let dir: PathBuf = testdir!();
-    let module_file = create_file(&dir.join("module.json"));
-    let types_dir = create_directory(&dir.join("types"));
+    let module_file = create_file(&dir.join(format!("{}.json", MODULE)));
+    let types_dir = create_directory(&dir.join(TYPES_DIRECTORY));
     let type_a_file = create_file(&types_dir.join("a.json"));
     let type_b_dir = create_directory(&types_dir.join("b"));
-    let type_b_root_file = create_file(&type_b_dir.join("_.json"));
+    let type_b_root_file = create_file(&type_b_dir.join(format!("{}.json", UNDERSCORE_FILE_NAME)));
     let type_b_extra_file = create_file(&type_b_dir.join("description.txt"));
 
     assert_eq!(
@@ -93,11 +96,12 @@ fn it_works_with_types() {
 #[test]
 fn it_works_with_contents() {
     let dir: PathBuf = testdir!();
-    let module_file = create_file(&dir.join("module.json"));
-    let contents_dir = create_directory(&dir.join("contents"));
+    let module_file = create_file(&dir.join(format!("{}.json", MODULE)));
+    let contents_dir = create_directory(&dir.join(CONTENTS_DIRECTORY));
     let content_a_file = create_file(&contents_dir.join("a.json"));
     let content_b_dir = create_directory(&contents_dir.join("b"));
-    let content_b_root_file = create_file(&content_b_dir.join("_.json"));
+    let content_b_root_file =
+        create_file(&content_b_dir.join(format!("{}.json", UNDERSCORE_FILE_NAME)));
     let content_b_extra_file = create_file(&content_b_dir.join("description.txt"));
 
     assert_eq!(
