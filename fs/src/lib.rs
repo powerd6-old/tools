@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use crate::utils::has_file_named;
+
 /// The name of the file that corresponds to the root of a sparse directory.
 pub const UNDERSCORE_FILE_NAME: &str = "_";
 /// The name of the directory or file that corresponds to the module information.
@@ -81,8 +83,13 @@ impl TryFrom<PathBuf> for FileSystem {
 
     fn try_from(value: PathBuf) -> Result<Self, Self::Error> {
         if !value.exists() || value.is_file() {
-            return Err(FileSystemError::InvalidPath)
+            return Err(FileSystemError::InvalidPath);
+        }
+        if !value.join(MODULE).exists() && !has_file_named(&value, MODULE) {
+            return Err(FileSystemError::MissingRequiredEntry);
         }
         todo!("Build the FileSystem from `value`.")
     }
 }
+
+mod utils;
