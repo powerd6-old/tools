@@ -80,6 +80,9 @@ impl TryFrom<PathBuf> for FileSystem {
     type Error = FileSystemError;
 
     fn try_from(value: PathBuf) -> Result<Self, Self::Error> {
+        if !value.exists() {
+            return Err(FileSystemError::InvalidPath)
+        }
         todo!("Build the FileSystem from `value`.")
     }
 }
