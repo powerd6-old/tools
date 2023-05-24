@@ -17,6 +17,16 @@ fn create_directory(path: &PathBuf) -> PathBuf {
 }
 
 #[test]
+fn it_fails_on_inexistent_path() {
+    let dir: PathBuf = testdir!();
+
+    assert_eq!(
+        FileSystem::try_from(dir.join("missing-path")).unwrap_err(),
+        FileSystemError::InvalidPath
+    );
+}
+
+#[test]
 fn it_fails_on_non_directory() {
     let dir: PathBuf = testdir!();
     let empty_file = create_file(&dir.join("some.file"));
