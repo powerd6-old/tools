@@ -1,18 +1,15 @@
-use std::{
-    collections::HashSet,
-    path::{Path, PathBuf},
-};
+use std::path::PathBuf;
 
 /// The name of the file that corresponds to the root of a sparse directory.
-pub const UNDERSCORE: &str = "_";
+pub const UNDERSCORE_FILE_NAME: &str = "_";
 /// The name of the directory or file that corresponds to the module information.
-const MODULE: &str = "module";
+pub const MODULE: &str = "module";
 /// The name of the directory that contains the types.
-const TYPES: &str = "types";
+pub const TYPES_DIRECTORY: &str = "types";
 /// The name of the directory or file that corresponds to the rendering templates of a type.
-const RENDERING: &str = "rendering";
+pub const RENDERING_DIRECTORY: &str = "rendering";
 /// The name of the directory that contains the contents.
-const CONTENTS: &str = "contents";
+pub const CONTENTS_DIRECTORY: &str = "contents";
 
 /// A representation of a filesystem, tailored to build a Module from.
 #[derive(Debug, PartialEq, Eq)]
