@@ -3,12 +3,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
-pub fn has_file_named(path: &Path, filename: &str) -> bool {
-    get_files_with_name(path, filename).is_some()
-}
-
 /// A helper function that maps all objects inside a directory into a `PathBuf` iterator
-fn get_paths_in_directory(path: &Path) -> impl Iterator<Item = PathBuf> {
+pub fn get_paths_in_directory(path: &Path) -> impl Iterator<Item = PathBuf> {
     read_dir(path)
         .into_iter()
         .flatten()
@@ -16,15 +12,20 @@ fn get_paths_in_directory(path: &Path) -> impl Iterator<Item = PathBuf> {
         .map(|e| e.path())
 }
 
+/// Signals whether a file has a specific name, ignoring the extension
+pub fn has_file_named(path: &Path, filename: &str) -> bool {
+    get_files_with_name(path, filename).is_some()
+}
+
 /// Finds the first file (ordered alphabetically) in a directory with a specific filename, regardless of it's extension
-fn get_files_with_name(path: &Path, name: &str) -> Option<PathBuf> {
+pub fn get_files_with_name(path: &Path, name: &str) -> Option<PathBuf> {
     get_paths_in_directory(path)
         .filter(|p| p.is_file())
         .find(|f| is_file_name(f, name))
 }
 
 /// Checks if a file has a certain name, regardless of it's extension
-fn is_file_name(path: &Path, file_name: &str) -> bool {
+pub fn is_file_name(path: &Path, file_name: &str) -> bool {
     path.file_name()
         .map(|n| String::from(n.to_str().expect("File names must exist")))
         .map_or(false, |x| x.starts_with(file_name))

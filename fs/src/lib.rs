@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use utils::{get_files_with_name, get_paths_in_directory, is_file_name};
+
 use crate::utils::has_file_named;
 
 /// The name of the file that corresponds to the root of a sparse directory.
@@ -93,7 +95,19 @@ impl TryFrom<PathBuf> for FileSystem {
         if !value.join(MODULE).exists() && !has_file_named(&value, MODULE) {
             return Err(FileSystemError::MissingRequiredEntry);
         }
-        todo!("Build the FileSystem from `value`.")
+        Ok(FileSystem::new(
+            value.clone(),
+            get_files_with_name(value.as_path().clone(), MODULE)
+                .map(|f| Entry::File(f))
+                .unwrap_or_else(|| Entry::Directory {
+                    root_file: get_files_with_name(&value.join(MODULE), UNDERSCORE_FILE_NAME)
+                        .unwrap(),
+                    extra_files: get_paths_in_directory(&value.join(MODULE))
+                        .filter(|e| e.is_file())
+                        .filter(|f| !is_file_name(f, UNDERSCORE_FILE_NAME))
+                        .collect(),
+                }),
+        ))
     }
 }
 
