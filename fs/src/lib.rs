@@ -1,4 +1,7 @@
-use std::{collections::HashSet, path::PathBuf};
+use std::{
+    collections::HashSet,
+    path::{Path, PathBuf},
+};
 
 /// The name of the file that corresponds to the root of a sparse directory.
 pub const UNDERSCORE: &str = "_";
@@ -39,4 +42,18 @@ pub enum Entry {
 pub struct EntrySet {
     base_path: PathBuf,
     entries: HashSet<Entry>,
+}
+
+/// The errors that can happen when constructing a FileSystem
+pub enum Error {
+    MissingRequiredEntry,
+}
+
+impl TryFrom<&Path> for FileSystem {
+    type Error = Error;
+
+    fn try_from(value: &Path) -> Result<Self, Self::Error> {
+        todo!("Write integration tests before implementation");
+        todo!("Build the FileSystem from `value`.")
+    }
 }
