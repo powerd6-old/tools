@@ -64,6 +64,25 @@ pub enum Entry {
     },
 }
 
+impl Entry {
+    pub fn try_from_named(path: PathBuf, name: &str) -> Option<Entry> {
+        if let Some(file) = get_files_with_name(&path, name) {
+            Some(Entry::File(file))
+        } else if let Some(root_file) = get_files_with_name(&path.join(name), UNDERSCORE_FILE_NAME)
+        {
+            Some(Entry::Directory {
+                root_file,
+                extra_files: get_paths_in_directory(&path.join(name))
+                    .filter(|e| e.is_file())
+                    .filter(|f| !is_file_name(f, UNDERSCORE_FILE_NAME))
+                    .collect(),
+            })
+        } else {
+            None
+        }
+    }
+}
+
 /// A collection of data objects contained within a directory.
 /// This structure does not represent the number of levels each entry is nested at.
 #[derive(Debug, PartialEq, Eq)]
@@ -92,22 +111,11 @@ impl TryFrom<PathBuf> for FileSystem {
         if !value.exists() || value.is_file() {
             return Err(FileSystemError::InvalidPath);
         }
-        if !value.join(MODULE).exists() && !has_file_named(&value, MODULE) {
+        if let Some(module_entry) = Entry::try_from_named(value.clone(), MODULE) {
+            Ok(FileSystem::new(value.clone(), module_entry))
+        } else {
             return Err(FileSystemError::MissingRequiredEntry);
         }
-        Ok(FileSystem::new(
-            value.clone(),
-            get_files_with_name(value.as_path().clone(), MODULE)
-                .map(|f| Entry::File(f))
-                .unwrap_or_else(|| Entry::Directory {
-                    root_file: get_files_with_name(&value.join(MODULE), UNDERSCORE_FILE_NAME)
-                        .unwrap(),
-                    extra_files: get_paths_in_directory(&value.join(MODULE))
-                        .filter(|e| e.is_file())
-                        .filter(|f| !is_file_name(f, UNDERSCORE_FILE_NAME))
-                        .collect(),
-                }),
-        ))
     }
 }
 
