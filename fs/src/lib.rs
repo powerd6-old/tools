@@ -55,6 +55,11 @@ pub enum Entry {
         root_file: PathBuf,
         extra_files: Vec<PathBuf>,
     },
+    RenderingDirectory {
+        root_file: PathBuf,
+        extra_files: Vec<PathBuf>,
+        rendering_files: Vec<PathBuf>,
+    },
 }
 
 /// A collection of data objects contained within a directory.
