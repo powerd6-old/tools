@@ -4,7 +4,4 @@ description = "A virtual representation of the file system, prepared to build mo
 version = "0.1.0"
 edition.workspace = true
 
-[features]
-serde = []
-
 [dependencies]
