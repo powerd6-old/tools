@@ -6,6 +6,5 @@ edition.workspace = true
 
 [dependencies]
 jsonschema = { workspace = true, features = ["draft202012"] }
-serde = { workspace = true }
 serde_json = { workspace = true }
-url = { workspace = true, features = ["serde"] }
+url = { workspace = true }
