@@ -1,4 +1,8 @@
 #!/usr/bin/env zsh
+if [[ $(rustup component list | grep -qL "llvm") ]]; then
+    echo "Installing llvm-tools"
+    rustup component add llvm-tools-preview
+fi
 cargo install grcov
 cargo clean
 CARGO_INCREMENTAL=0 RUSTFLAGS='-Cinstrument-coverage' LLVM_PROFILE_FILE='cargo-test-%p-%m.profraw' cargo test --workspace
