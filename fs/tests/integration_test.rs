@@ -2,8 +2,8 @@ use std::path::PathBuf;
 use testdir::testdir;
 
 use fs::{
-    Entry, EntrySet, FileSystem, FileSystemError, CONTENTS_DIRECTORY, MODULE, TYPES_DIRECTORY,
-    UNDERSCORE_FILE_NAME,
+    Entry, EntrySet, FileSystem, FileSystemError, CONTENTS_DIRECTORY, MODULE, RENDERING_DIRECTORY,
+    TYPES_DIRECTORY, UNDERSCORE_FILE_NAME,
 };
 
 fn create_file(path: &PathBuf) -> PathBuf {
@@ -87,6 +87,8 @@ fn it_works_with_types() {
     let type_b_dir = create_directory(&types_dir.join("b"));
     let type_b_root_file = create_file(&type_b_dir.join(format!("{}.json", UNDERSCORE_FILE_NAME)));
     let type_b_extra_file = create_file(&type_b_dir.join("description.txt"));
+    let type_b_rendering_dir = create_directory(&type_b_dir.join(RENDERING_DIRECTORY));
+    let type_b_rendering_txt_file = create_file(&type_b_rendering_dir.join("txt.hjs"));
 
     assert_eq!(
         FileSystem::try_from(dir.clone()).unwrap(),
@@ -94,9 +96,10 @@ fn it_works_with_types() {
             types_dir.to_path_buf(),
             vec![
                 Entry::File(type_a_file),
-                Entry::Directory {
+                Entry::RenderingDirectory {
                     root_file: type_b_root_file,
-                    extra_files: vec![type_b_extra_file]
+                    extra_files: vec![type_b_extra_file],
+                    rendering_files: vec![type_b_rendering_txt_file],
                 }
             ]
         ))
@@ -113,6 +116,8 @@ fn it_works_with_contents() {
     let content_b_root_file =
         create_file(&content_b_dir.join(format!("{}.json", UNDERSCORE_FILE_NAME)));
     let content_b_extra_file = create_file(&content_b_dir.join("description.txt"));
+    let content_b_c_dir = create_directory(&content_b_dir.join("c"));
+    let content_b_c_file = create_file(&content_b_c_dir.join("b-c.json"));
 
     assert_eq!(
         FileSystem::try_from(dir.clone()).unwrap(),
@@ -123,7 +128,8 @@ fn it_works_with_contents() {
                 Entry::Directory {
                     root_file: content_b_root_file,
                     extra_files: vec![content_b_extra_file]
-                }
+                },
+                Entry::File(content_b_c_file),
             ]
         ))
     );
