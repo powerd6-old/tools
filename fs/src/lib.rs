@@ -93,10 +93,45 @@ impl EntrySet {
     pub fn new(base_path: PathBuf, entries: Vec<Entry>) -> Self {
         EntrySet { base_path, entries }
     }
+    pub fn extend(mut self, new_entries: Vec<Entry>) -> Self {
+        self.entries.extend(new_entries.into_iter());
+        self
+    }
     pub fn try_from(base_path: PathBuf) -> Option<Self> {
-        None
+        if !base_path.exists() {
+            return None;
+        }
+        let mut entries: Vec<Entry> = Vec::new();
+        if let Some(root_file) = get_files_with_name(&base_path, UNDERSCORE_FILE_NAME) {
+            // This path has an underscore file, will be mapped as Directory
+            entries.push(Entry::Directory {
+                root_file,
+                extra_files: get_paths_in_directory(&base_path)
+                    .filter(|e| e.is_file())
+                    .filter(|f| !is_file_name(f, UNDERSCORE_FILE_NAME))
+                    .collect(),
+            })
+        } else {
+            // Each file in this path should be mapped to a new File
+            entries.extend(
+                get_paths_in_directory(&base_path)
+                    .filter(|e| e.is_file())
+                    .map(|f| Entry::File(f)),
+            )
+        }
+        // Map children directories
+        entries.extend(
+            get_paths_in_directory(&base_path)
+                .filter(|e| e.is_dir())
+                .map(|d| EntrySet::try_from(d))
+                .flatten()
+                .map(|a| a.entries.into_iter())
+                .flatten(),
+        );
+        Some(EntrySet { base_path, entries })
     }
     pub fn try_from_with_rendering(base_path: PathBuf) -> Option<Self> {
+        // TODO: Implement variant where rendering folder are returned as elements on parent entry
         None
     }
 }
