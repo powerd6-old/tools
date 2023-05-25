@@ -131,8 +131,51 @@ impl EntrySet {
         Some(EntrySet { base_path, entries })
     }
     pub fn try_from_with_rendering(base_path: PathBuf) -> Option<Self> {
-        // TODO: Implement variant where rendering folder are returned as elements on parent entry
-        None
+        if !base_path.exists() {
+            return None;
+        }
+        let mut entries: Vec<Entry> = Vec::new();
+        if let Some(root_file) = get_files_with_name(&base_path, UNDERSCORE_FILE_NAME) {
+            // This path has an underscore file, will be mapped as Directory or RenderingDirectory
+            if base_path.join(RENDERING_DIRECTORY).exists() {
+                entries.push(Entry::RenderingDirectory {
+                    root_file,
+                    extra_files: get_paths_in_directory(&base_path)
+                        .filter(|e| e.is_file())
+                        .filter(|f| !is_file_name(f, UNDERSCORE_FILE_NAME))
+                        .collect(),
+                    rendering_files: get_paths_in_directory(&base_path.join(RENDERING_DIRECTORY))
+                        .filter(|e| e.is_file())
+                        .collect(),
+                })
+            } else {
+                entries.push(Entry::Directory {
+                    root_file,
+                    extra_files: get_paths_in_directory(&base_path)
+                        .filter(|e| e.is_file())
+                        .filter(|f| !is_file_name(f, UNDERSCORE_FILE_NAME))
+                        .collect(),
+                })
+            }
+        } else {
+            // Each file in this path should be mapped to a new File
+            entries.extend(
+                get_paths_in_directory(&base_path)
+                    .filter(|e| e.is_file())
+                    .map(|f| Entry::File(f)),
+            )
+        }
+        // Map children directories (excluded RENDERING_DIRECTORY)
+        entries.extend(
+            get_paths_in_directory(&base_path)
+                .filter(|e| e.is_dir())
+                .filter(|d| !d.ends_with(RENDERING_DIRECTORY))
+                .map(|d| EntrySet::try_from_with_rendering(d))
+                .flatten()
+                .map(|a| a.entries.into_iter())
+                .flatten(),
+        );
+        Some(EntrySet { base_path, entries })
     }
 }
 
