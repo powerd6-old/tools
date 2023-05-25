@@ -170,10 +170,8 @@ impl EntrySet {
             get_paths_in_directory(&base_path)
                 .filter(|e| e.is_dir())
                 .filter(|d| !d.ends_with(RENDERING_DIRECTORY))
-                .map(|d| EntrySet::try_from_with_rendering(d))
-                .flatten()
-                .map(|a| a.entries.into_iter())
-                .flatten(),
+                .filter_map(EntrySet::try_from_with_rendering)
+                .flat_map(|a| a.entries.into_iter()),
         );
         Some(EntrySet { base_path, entries })
     }
@@ -205,7 +203,7 @@ impl TryFrom<PathBuf> for FileSystem {
             }
             Ok(result)
         } else {
-            return Err(FileSystemError::MissingRequiredEntry);
+            Err(FileSystemError::MissingRequiredEntry)
         }
     }
 }
