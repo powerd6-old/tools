@@ -10,15 +10,15 @@ pub struct Identifier(String);
 /// This object does not perform validation into the values of each field and merely serves as a convenient way to manipulate already-built modules in rust.
 pub struct Module {
     /// The title of the module.
-    title: String,
+    pub title: String,
     /// The human-readable description of what the module contains.
-    description: String,
+    pub description: String,
     /// A hyperlink to the where the module is hosted.
-    source: Url,
+    pub source: Url,
     /// A collection of types that are defined in this module.
-    types: Option<HashMap<Identifier, ModuleType>>,
+    pub types: Option<HashMap<Identifier, ModuleType>>,
     /// A collection of contents defined in this module, the keys of the map are the unique identifiers of the content pieces.
-    content: Option<HashMap<Identifier, JsonObject>>,
+    pub content: Option<HashMap<Identifier, JsonObject>>,
 }
 
 /// A generic JSON object
@@ -27,13 +27,13 @@ pub type JsonObject = HashMap<String, Value>;
 /// The aggregation of properties, their value-types and their rendering rules.
 pub struct ModuleType {
     /// The unique identifier of the type.
-    id: Identifier,
+    pub id: Identifier,
     /// The human-readable description of what the type represents.
-    description: String,
+    pub description: String,
     /// The json-schema used to validate the type.
-    schema: Option<JSONSchema>,
+    pub schema: Option<JSONSchema>,
     /// The rendering code for all the supported formats.
-    rendering: Option<HashMap<RenderingFormat, RenderingContent>>,
+    pub rendering: Option<HashMap<RenderingFormat, RenderingContent>>,
 }
 
 /// The template to be used for the specified format.
