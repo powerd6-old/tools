@@ -1,8 +1,6 @@
+use pretty_assertions::assert_eq;
 use std::path::PathBuf;
 use testdir::testdir;
-
-#[cfg(test)]
-use pretty_assertions::{assert_eq, assert_ne};
 
 use fs::{
     Entry, EntrySet, FileSystem, FileSystemError, CONTENTS_DIRECTORY, MODULE, RENDERING_DIRECTORY,

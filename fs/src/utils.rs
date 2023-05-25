@@ -34,6 +34,7 @@ pub fn is_file_name(path: &Path, file_name: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pretty_assertions::assert_eq;
     use testdir::testdir;
 
     fn create_file(path: &PathBuf) -> PathBuf {
