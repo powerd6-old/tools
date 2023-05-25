@@ -12,11 +12,6 @@ pub fn get_paths_in_directory(path: &Path) -> impl Iterator<Item = PathBuf> {
         .map(|e| e.path())
 }
 
-/// Signals whether a file has a specific name, ignoring the extension
-pub fn has_file_named(path: &Path, filename: &str) -> bool {
-    get_files_with_name(path, filename).is_some()
-}
-
 /// Finds the first file (ordered alphabetically) in a directory with a specific filename, regardless of it's extension
 pub fn get_files_with_name(path: &Path, name: &str) -> Option<PathBuf> {
     get_paths_in_directory(path)
