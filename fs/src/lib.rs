@@ -2,8 +2,6 @@ use std::path::PathBuf;
 
 use utils::{get_files_with_name, get_paths_in_directory, is_file_name};
 
-use crate::utils::has_file_named;
-
 /// The name of the file that corresponds to the root of a sparse directory.
 pub const UNDERSCORE_FILE_NAME: &str = "_";
 /// The name of the directory or file that corresponds to the module information.
@@ -95,6 +93,12 @@ impl EntrySet {
     pub fn new(base_path: PathBuf, entries: Vec<Entry>) -> Self {
         EntrySet { base_path, entries }
     }
+    pub fn try_from(base_path: PathBuf) -> Option<Self> {
+        None
+    }
+    pub fn try_from_with_rendering(base_path: PathBuf) -> Option<Self> {
+        None
+    }
 }
 
 /// The errors that can happen when constructing a FileSystem
@@ -112,7 +116,16 @@ impl TryFrom<PathBuf> for FileSystem {
             return Err(FileSystemError::InvalidPath);
         }
         if let Some(module_entry) = Entry::try_from_named(value.clone(), MODULE) {
-            Ok(FileSystem::new(value.clone(), module_entry))
+            let mut result = FileSystem::new(value.clone(), module_entry);
+            if let Some(types_entries) =
+                EntrySet::try_from_with_rendering(value.join(TYPES_DIRECTORY))
+            {
+                result = result.with_types(types_entries);
+            }
+            if let Some(content_entries) = EntrySet::try_from(value.join(CONTENTS_DIRECTORY)) {
+                result = result.with_contents(content_entries);
+            }
+            Ok(result)
         } else {
             return Err(FileSystemError::MissingRequiredEntry);
         }
