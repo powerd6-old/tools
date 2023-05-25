@@ -93,10 +93,6 @@ impl EntrySet {
     pub fn new(base_path: PathBuf, entries: Vec<Entry>) -> Self {
         EntrySet { base_path, entries }
     }
-    pub fn extend(mut self, new_entries: Vec<Entry>) -> Self {
-        self.entries.extend(new_entries.into_iter());
-        self
-    }
     pub fn try_from(base_path: PathBuf) -> Option<Self> {
         if !base_path.exists() {
             return None;
