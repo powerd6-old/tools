@@ -90,6 +90,9 @@ fn it_works_with_types() {
     let type_b_extra_file = create_file(&type_b_dir.join("description.txt"));
     let type_b_rendering_dir = create_directory(&type_b_dir.join(RENDERING_DIRECTORY));
     let type_b_rendering_txt_file = create_file(&type_b_rendering_dir.join("txt.hjs"));
+    let type_c_dir = create_directory(&types_dir.join("c"));
+    let type_c_root_file = create_file(&type_c_dir.join(format!("{}.json", UNDERSCORE_FILE_NAME)));
+    let type_c_extra_file = create_file(&type_c_dir.join("description.txt"));
 
     assert_eq!(
         FileSystem::try_from(dir.clone()).unwrap(),
@@ -97,11 +100,15 @@ fn it_works_with_types() {
             types_dir.to_path_buf(),
             vec![
                 Entry::File(type_a_file),
+                Entry::Directory {
+                    root_file: type_c_root_file,
+                    extra_files: vec![type_c_extra_file],
+                },
                 Entry::RenderingDirectory {
                     root_file: type_b_root_file,
                     extra_files: vec![type_b_extra_file],
                     rendering_files: vec![type_b_rendering_txt_file],
-                }
+                },
             ]
         ))
     );
