@@ -8,3 +8,4 @@ edition.workspace = true
 
 [dev-dependencies]
 testdir = { workspace = true }
+pretty_assertions = { workspace = true }
