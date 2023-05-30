@@ -100,14 +100,14 @@ fn it_works_with_types() {
             types_dir,
             vec![
                 Entry::File(type_a_file),
-                Entry::Directory {
-                    root_file: type_c_root_file,
-                    extra_files: vec![type_c_extra_file],
-                },
                 Entry::RenderingDirectory {
                     root_file: type_b_root_file,
                     extra_files: vec![type_b_extra_file],
                     rendering_files: vec![type_b_rendering_txt_file],
+                },
+                Entry::Directory {
+                    root_file: type_c_root_file,
+                    extra_files: vec![type_c_extra_file],
                 },
             ]
         ))
