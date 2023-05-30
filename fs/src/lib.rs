@@ -66,13 +66,17 @@ impl Entry {
     pub fn try_from_named(path: PathBuf, name: &str) -> Option<Entry> {
         if let Some(file) = get_files_with_name(&path, name) {
             Some(Entry::File(file))
-        } else { get_files_with_name(&path.join(name), UNDERSCORE_FILE_NAME).map(|root_file| Entry::Directory {
-                root_file,
-                extra_files: get_paths_in_directory(&path.join(name))
-                    .filter(|e| e.is_file())
-                    .filter(|f| !is_file_name(f, UNDERSCORE_FILE_NAME))
-                    .collect(),
-            }) }
+        } else {
+            get_files_with_name(&path.join(name), UNDERSCORE_FILE_NAME).map(|root_file| {
+                Entry::Directory {
+                    root_file,
+                    extra_files: get_paths_in_directory(&path.join(name))
+                        .filter(|e| e.is_file())
+                        .filter(|f| !is_file_name(f, UNDERSCORE_FILE_NAME))
+                        .collect(),
+                }
+            })
+        }
     }
 }
 
@@ -197,4 +201,5 @@ impl TryFrom<PathBuf> for FileSystem {
     }
 }
 
+pub mod path_utils;
 mod utils;
