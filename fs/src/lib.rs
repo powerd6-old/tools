@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
-use utils::{get_files_with_name, get_paths_in_directory, is_file_name};
+use path_utils::PathUtils;
+use utils::{get_files_with_name, get_paths_in_directory};
 
 /// The name of the file that corresponds to the root of a sparse directory.
 pub const UNDERSCORE_FILE_NAME: &str = "_";
@@ -72,7 +73,7 @@ impl Entry {
                     root_file,
                     extra_files: get_paths_in_directory(&path.join(name))
                         .filter(|e| e.is_file())
-                        .filter(|f| !is_file_name(f, UNDERSCORE_FILE_NAME))
+                        .filter(|f| !f.is_file_named(UNDERSCORE_FILE_NAME))
                         .collect(),
                 }
             })
@@ -103,7 +104,7 @@ impl EntrySet {
                 root_file,
                 extra_files: get_paths_in_directory(&base_path)
                     .filter(|e| e.is_file())
-                    .filter(|f| !is_file_name(f, UNDERSCORE_FILE_NAME))
+                    .filter(|f| !f.is_file_named(UNDERSCORE_FILE_NAME))
                     .collect(),
             })
         } else {
@@ -135,7 +136,7 @@ impl EntrySet {
                     root_file,
                     extra_files: get_paths_in_directory(&base_path)
                         .filter(|e| e.is_file())
-                        .filter(|f| !is_file_name(f, UNDERSCORE_FILE_NAME))
+                        .filter(|f| !f.is_file_named(UNDERSCORE_FILE_NAME))
                         .collect(),
                     rendering_files: get_paths_in_directory(&base_path.join(RENDERING_DIRECTORY))
                         .filter(|e| e.is_file())
@@ -146,7 +147,7 @@ impl EntrySet {
                     root_file,
                     extra_files: get_paths_in_directory(&base_path)
                         .filter(|e| e.is_file())
-                        .filter(|f| !is_file_name(f, UNDERSCORE_FILE_NAME))
+                        .filter(|f| !f.is_file_named(UNDERSCORE_FILE_NAME))
                         .collect(),
                 })
             }

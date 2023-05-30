@@ -11,8 +11,3 @@ pub fn get_paths_in_directory(path: &Path) -> impl Iterator<Item = PathBuf> {
 pub fn get_files_with_name(path: &Path, name: &str) -> Option<PathBuf> {
     path.get_first_child_named(name)
 }
-
-/// Checks if a file has a certain name, regardless of it's extension
-pub fn is_file_name(path: &Path, file_name: &str) -> bool {
-    path.is_file_named(file_name)
-}
