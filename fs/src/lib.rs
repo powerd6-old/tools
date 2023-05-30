@@ -1,7 +1,6 @@
 use std::path::PathBuf;
 
 use path_utils::PathUtils;
-use utils::get_paths_in_directory;
 
 /// The name of the file that corresponds to the root of a sparse directory.
 pub const UNDERSCORE_FILE_NAME: &str = "_";
@@ -72,7 +71,10 @@ impl Entry {
                 .get_first_child_named(UNDERSCORE_FILE_NAME)
                 .map(|root_file| Entry::Directory {
                     root_file,
-                    extra_files: get_paths_in_directory(&path.join(name))
+                    extra_files: path
+                        .join(name)
+                        .get_children()
+                        .into_iter()
                         .filter(|e| e.is_file())
                         .filter(|f| !f.is_file_named(UNDERSCORE_FILE_NAME))
                         .collect(),
@@ -102,7 +104,9 @@ impl EntrySet {
             // This path has an underscore file, will be mapped as Directory
             entries.push(Entry::Directory {
                 root_file,
-                extra_files: get_paths_in_directory(&base_path)
+                extra_files: base_path
+                    .get_children()
+                    .into_iter()
                     .filter(|e| e.is_file())
                     .filter(|f| !f.is_file_named(UNDERSCORE_FILE_NAME))
                     .collect(),
@@ -110,14 +114,18 @@ impl EntrySet {
         } else {
             // Each file in this path should be mapped to a new File
             entries.extend(
-                get_paths_in_directory(&base_path)
+                base_path
+                    .get_children()
+                    .into_iter()
                     .filter(|e| e.is_file())
                     .map(Entry::File),
             )
         }
         // Map children directories
         entries.extend(
-            get_paths_in_directory(&base_path)
+            base_path
+                .get_children()
+                .into_iter()
                 .filter(|e| e.is_dir())
                 .filter_map(EntrySet::try_from)
                 .flat_map(|a| a.entries.into_iter()),
@@ -134,18 +142,25 @@ impl EntrySet {
             if base_path.join(RENDERING_DIRECTORY).exists() {
                 entries.push(Entry::RenderingDirectory {
                     root_file,
-                    extra_files: get_paths_in_directory(&base_path)
+                    extra_files: base_path
+                        .get_children()
+                        .into_iter()
                         .filter(|e| e.is_file())
                         .filter(|f| !f.is_file_named(UNDERSCORE_FILE_NAME))
                         .collect(),
-                    rendering_files: get_paths_in_directory(&base_path.join(RENDERING_DIRECTORY))
+                    rendering_files: base_path
+                        .join(RENDERING_DIRECTORY)
+                        .get_children()
+                        .into_iter()
                         .filter(|e| e.is_file())
                         .collect(),
                 })
             } else {
                 entries.push(Entry::Directory {
                     root_file,
-                    extra_files: get_paths_in_directory(&base_path)
+                    extra_files: base_path
+                        .get_children()
+                        .into_iter()
                         .filter(|e| e.is_file())
                         .filter(|f| !f.is_file_named(UNDERSCORE_FILE_NAME))
                         .collect(),
@@ -154,14 +169,18 @@ impl EntrySet {
         } else {
             // Each file in this path should be mapped to a new File
             entries.extend(
-                get_paths_in_directory(&base_path)
+                base_path
+                    .get_children()
+                    .into_iter()
                     .filter(|e| e.is_file())
                     .map(Entry::File),
             )
         }
         // Map children directories (excluded RENDERING_DIRECTORY)
         entries.extend(
-            get_paths_in_directory(&base_path)
+            base_path
+                .get_children()
+                .into_iter()
                 .filter(|e| e.is_dir())
                 .filter(|d| !d.ends_with(RENDERING_DIRECTORY))
                 .filter_map(EntrySet::try_from_with_rendering)
@@ -203,4 +222,3 @@ impl TryFrom<PathBuf> for FileSystem {
 }
 
 pub mod path_utils;
-mod utils;
