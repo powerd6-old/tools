@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use path_utils::PathUtils;
-use utils::{get_files_with_name, get_paths_in_directory};
+use utils::get_paths_in_directory;
 
 /// The name of the file that corresponds to the root of a sparse directory.
 pub const UNDERSCORE_FILE_NAME: &str = "_";
@@ -65,18 +65,18 @@ pub enum Entry {
 
 impl Entry {
     pub fn try_from_named(path: PathBuf, name: &str) -> Option<Entry> {
-        if let Some(file) = get_files_with_name(&path, name) {
+        if let Some(file) = path.get_first_child_named(name) {
             Some(Entry::File(file))
         } else {
-            get_files_with_name(&path.join(name), UNDERSCORE_FILE_NAME).map(|root_file| {
-                Entry::Directory {
+            path.join(name)
+                .get_first_child_named(UNDERSCORE_FILE_NAME)
+                .map(|root_file| Entry::Directory {
                     root_file,
                     extra_files: get_paths_in_directory(&path.join(name))
                         .filter(|e| e.is_file())
                         .filter(|f| !f.is_file_named(UNDERSCORE_FILE_NAME))
                         .collect(),
-                }
-            })
+                })
         }
     }
 }
@@ -98,7 +98,7 @@ impl EntrySet {
             return None;
         }
         let mut entries: Vec<Entry> = Vec::new();
-        if let Some(root_file) = get_files_with_name(&base_path, UNDERSCORE_FILE_NAME) {
+        if let Some(root_file) = base_path.get_first_child_named(UNDERSCORE_FILE_NAME) {
             // This path has an underscore file, will be mapped as Directory
             entries.push(Entry::Directory {
                 root_file,
@@ -129,7 +129,7 @@ impl EntrySet {
             return None;
         }
         let mut entries: Vec<Entry> = Vec::new();
-        if let Some(root_file) = get_files_with_name(&base_path, UNDERSCORE_FILE_NAME) {
+        if let Some(root_file) = base_path.get_first_child_named(UNDERSCORE_FILE_NAME) {
             // This path has an underscore file, will be mapped as Directory or RenderingDirectory
             if base_path.join(RENDERING_DIRECTORY).exists() {
                 entries.push(Entry::RenderingDirectory {
