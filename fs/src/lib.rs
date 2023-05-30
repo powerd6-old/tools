@@ -66,18 +66,13 @@ impl Entry {
     pub fn try_from_named(path: PathBuf, name: &str) -> Option<Entry> {
         if let Some(file) = get_files_with_name(&path, name) {
             Some(Entry::File(file))
-        } else if let Some(root_file) = get_files_with_name(&path.join(name), UNDERSCORE_FILE_NAME)
-        {
-            Some(Entry::Directory {
+        } else { get_files_with_name(&path.join(name), UNDERSCORE_FILE_NAME).map(|root_file| Entry::Directory {
                 root_file,
                 extra_files: get_paths_in_directory(&path.join(name))
                     .filter(|e| e.is_file())
                     .filter(|f| !is_file_name(f, UNDERSCORE_FILE_NAME))
                     .collect(),
-            })
-        } else {
-            None
-        }
+            }) }
     }
 }
 
@@ -112,17 +107,15 @@ impl EntrySet {
             entries.extend(
                 get_paths_in_directory(&base_path)
                     .filter(|e| e.is_file())
-                    .map(|f| Entry::File(f)),
+                    .map(Entry::File),
             )
         }
         // Map children directories
         entries.extend(
             get_paths_in_directory(&base_path)
                 .filter(|e| e.is_dir())
-                .map(|d| EntrySet::try_from(d))
-                .flatten()
-                .map(|a| a.entries.into_iter())
-                .flatten(),
+                .filter_map(EntrySet::try_from)
+                .flat_map(|a| a.entries.into_iter()),
         );
         Some(EntrySet { base_path, entries })
     }
@@ -158,7 +151,7 @@ impl EntrySet {
             entries.extend(
                 get_paths_in_directory(&base_path)
                     .filter(|e| e.is_file())
-                    .map(|f| Entry::File(f)),
+                    .map(Entry::File),
             )
         }
         // Map children directories (excluded RENDERING_DIRECTORY)

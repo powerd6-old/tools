@@ -13,7 +13,7 @@ fn create_file(path: &PathBuf) -> PathBuf {
 }
 
 fn create_directory(path: &PathBuf) -> PathBuf {
-    std::fs::create_dir(&path).expect("Directory was created correctly");
+    std::fs::create_dir(path).expect("Directory was created correctly");
     path.to_path_buf()
 }
 
@@ -63,7 +63,7 @@ fn it_works_with_only_module_file() {
 #[test]
 fn it_works_with_only_module_as_directory() {
     let dir: PathBuf = testdir!();
-    let module_dir = create_directory(&dir.join(format!("{}", MODULE)));
+    let module_dir = create_directory(&dir.join(MODULE));
     let module_root = create_file(&module_dir.join(format!("{}.json", UNDERSCORE_FILE_NAME)));
     let module_extra_file = create_file(&module_dir.join("description.txt"));
 
@@ -97,7 +97,7 @@ fn it_works_with_types() {
     assert_eq!(
         FileSystem::try_from(dir.clone()).unwrap(),
         FileSystem::new(dir, Entry::File(module_file)).with_types(EntrySet::new(
-            types_dir.to_path_buf(),
+            types_dir,
             vec![
                 Entry::File(type_a_file),
                 Entry::Directory {
@@ -130,7 +130,7 @@ fn it_works_with_contents() {
     assert_eq!(
         FileSystem::try_from(dir.clone()).unwrap(),
         FileSystem::new(dir, Entry::File(module_file)).with_contents(EntrySet::new(
-            contents_dir.to_path_buf(),
+            contents_dir,
             vec![
                 Entry::File(content_a_file),
                 Entry::Directory {
