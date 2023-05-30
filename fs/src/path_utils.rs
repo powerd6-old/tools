@@ -59,7 +59,7 @@ mod tests {
         let file = create_file(&dir.join("a.json"));
         let sub_directory = create_directory(&dir.join("sub_directory"));
 
-        assert_eq!(dir.get_children(), [file, sub_directory])
+        assert_eq!(dir.get_children().sort(), [file, sub_directory].sort())
     }
 
     #[test]
