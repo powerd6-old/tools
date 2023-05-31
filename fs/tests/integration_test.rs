@@ -3,8 +3,8 @@ use std::path::PathBuf;
 use testdir::testdir;
 
 use fs::{
-    Entry, EntrySet, FileSystem, FileSystemError, CONTENTS_DIRECTORY, MODULE, RENDERING_DIRECTORY,
-    TYPES_DIRECTORY, UNDERSCORE_FILE_NAME,
+    Entry, EntrySet, FileSystem, FileSystemError, Sorted, CONTENTS_DIRECTORY, MODULE,
+    RENDERING_DIRECTORY, TYPES_DIRECTORY, UNDERSCORE_FILE_NAME,
 };
 
 fn create_file(path: &PathBuf) -> PathBuf {
@@ -95,22 +95,24 @@ fn it_works_with_types() {
     let type_c_extra_file = create_file(&type_c_dir.join("description.txt"));
 
     assert_eq!(
-        FileSystem::try_from(dir.clone()).unwrap(),
-        FileSystem::new(dir, Entry::File(module_file)).with_types(EntrySet::new(
-            types_dir,
-            vec![
-                Entry::File(type_a_file),
-                Entry::RenderingDirectory {
-                    root_file: type_b_root_file,
-                    extra_files: vec![type_b_extra_file],
-                    rendering_files: vec![type_b_rendering_txt_file],
-                },
-                Entry::Directory {
-                    root_file: type_c_root_file,
-                    extra_files: vec![type_c_extra_file],
-                },
-            ]
-        ))
+        FileSystem::try_from(dir.clone()).unwrap().sorted(),
+        FileSystem::new(dir, Entry::File(module_file))
+            .with_types(EntrySet::new(
+                types_dir,
+                vec![
+                    Entry::File(type_a_file),
+                    Entry::RenderingDirectory {
+                        root_file: type_b_root_file,
+                        extra_files: vec![type_b_extra_file],
+                        rendering_files: vec![type_b_rendering_txt_file],
+                    },
+                    Entry::Directory {
+                        root_file: type_c_root_file,
+                        extra_files: vec![type_c_extra_file],
+                    },
+                ]
+            ))
+            .sorted()
     );
 }
 
@@ -128,17 +130,19 @@ fn it_works_with_contents() {
     let content_b_c_file = create_file(&content_b_c_dir.join("b-c.json"));
 
     assert_eq!(
-        FileSystem::try_from(dir.clone()).unwrap(),
-        FileSystem::new(dir, Entry::File(module_file)).with_contents(EntrySet::new(
-            contents_dir,
-            vec![
-                Entry::File(content_a_file),
-                Entry::Directory {
-                    root_file: content_b_root_file,
-                    extra_files: vec![content_b_extra_file]
-                },
-                Entry::File(content_b_c_file),
-            ]
-        ))
+        FileSystem::try_from(dir.clone()).unwrap().sorted(),
+        FileSystem::new(dir, Entry::File(module_file))
+            .with_contents(EntrySet::new(
+                contents_dir,
+                vec![
+                    Entry::File(content_a_file),
+                    Entry::Directory {
+                        root_file: content_b_root_file,
+                        extra_files: vec![content_b_extra_file]
+                    },
+                    Entry::File(content_b_c_file),
+                ]
+            ))
+            .sorted()
     );
 }
