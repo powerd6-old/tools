@@ -276,7 +276,7 @@ impl Sorted for Entry {
 }
 impl Sorted for EntrySet {
     fn sorted(&self) -> Self {
-        let mut sorted_entries = self.entries.clone();
+        let mut sorted_entries: Vec<Entry> = self.entries.iter().map(|e| e.sorted()).collect();
         sorted_entries.sort();
         EntrySet {
             base_path: self.base_path.to_path_buf(),
