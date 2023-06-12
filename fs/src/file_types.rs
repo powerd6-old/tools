@@ -1,7 +1,4 @@
-use std::{
-    ffi::OsStr,
-    path::{Path, PathBuf},
-};
+use std::{ffi::OsStr, path::Path};
 
 use serde_json::Value;
 
