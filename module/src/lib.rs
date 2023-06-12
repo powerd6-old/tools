@@ -21,7 +21,7 @@ pub struct Module {
     pub content: Option<HashMap<Identifier, JsonObject>>,
 }
 
-/// A generic JSON object
+/// A generic object that contains data
 pub type JsonObject = HashMap<String, Value>;
 
 /// The aggregation of properties, their value-types and their rendering rules.
