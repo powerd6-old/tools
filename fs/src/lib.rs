@@ -195,6 +195,7 @@ impl EntrySet {
 pub enum FileSystemError {
     InvalidPath,
     MissingRequiredEntry,
+    UnrecognizableFileType,
 }
 
 impl TryFrom<PathBuf> for FileSystem {
@@ -284,3 +285,5 @@ impl Sorted for EntrySet {
         }
     }
 }
+
+pub mod file_types;
