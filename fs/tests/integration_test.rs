@@ -21,9 +21,13 @@ fn create_directory(path: &PathBuf) -> PathBuf {
 fn it_fails_on_inexistent_path() {
     let dir: PathBuf = testdir!();
 
+    let missing_path = dir.join("missing-path");
+
     assert_eq!(
-        FileSystem::try_from(dir.join("missing-path")).unwrap_err(),
-        FileSystemError::InvalidPath
+        FileSystem::try_from(missing_path.clone())
+            .unwrap_err()
+            .to_string(),
+        FileSystemError::InvalidPath(missing_path.into()).to_string()
     );
 }
 
@@ -33,8 +37,10 @@ fn it_fails_on_non_directory() {
     let empty_file = create_file(&dir.join("some.file"));
 
     assert_eq!(
-        FileSystem::try_from(empty_file).unwrap_err(),
-        FileSystemError::InvalidPath
+        FileSystem::try_from(empty_file.clone())
+            .unwrap_err()
+            .to_string(),
+        FileSystemError::InvalidPath(empty_file.into()).to_string()
     );
 }
 
@@ -44,8 +50,8 @@ fn it_fails_on_empty_directory() {
     let empty_dir = create_directory(&dir.join("empty/"));
 
     assert_eq!(
-        FileSystem::try_from(empty_dir).unwrap_err(),
-        FileSystemError::MissingRequiredEntry
+        FileSystem::try_from(empty_dir).unwrap_err().to_string(),
+        FileSystemError::MissingRequiredEntry(MODULE.to_string()).to_string()
     );
 }
 

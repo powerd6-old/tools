@@ -1,6 +1,10 @@
-use std::path::PathBuf;
+use std::{
+    error::{self, Error},
+    path::{Path, PathBuf},
+};
 
 use path_utils::PathUtils;
+use thiserror::Error;
 
 /// The name of the file that corresponds to the root of a sparse directory.
 pub const UNDERSCORE_FILE_NAME: &str = "_";
@@ -191,11 +195,18 @@ impl EntrySet {
 }
 
 /// The errors that can happen when constructing a FileSystem
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Error, Debug)]
 pub enum FileSystemError {
-    InvalidPath,
-    MissingRequiredEntry,
-    UnrecognizableFileType,
+    #[error("invalid path provided")]
+    InvalidPath(Box<Path>),
+    #[error("the required entry `{0}` is missing")]
+    MissingRequiredEntry(String),
+    #[error("the file type for `{0}` is not supported")]
+    UnsupportedFileType(String),
+    #[error("the file type for `{0}` was not identifiable")]
+    UnidentifiableFileType(Box<Path>),
+    #[error("the file could not be opened")]
+    UnableToOpenFile(#[from] Box<dyn Error>),
 }
 
 impl TryFrom<PathBuf> for FileSystem {
@@ -203,7 +214,7 @@ impl TryFrom<PathBuf> for FileSystem {
 
     fn try_from(value: PathBuf) -> Result<Self, Self::Error> {
         if !value.exists() || value.is_file() {
-            return Err(FileSystemError::InvalidPath);
+            return Err(FileSystemError::InvalidPath(value.into()));
         }
         if let Some(module_entry) = Entry::try_from_named(value.clone(), MODULE) {
             let mut result = FileSystem::new(value.clone(), module_entry);
@@ -217,7 +228,7 @@ impl TryFrom<PathBuf> for FileSystem {
             }
             Ok(result)
         } else {
-            Err(FileSystemError::MissingRequiredEntry)
+            Err(FileSystemError::MissingRequiredEntry(MODULE.to_string()))
         }
     }
 }
