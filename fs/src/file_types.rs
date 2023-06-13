@@ -12,11 +12,34 @@ pub enum FileType {
     // ETC
 }
 
-pub trait FileTypes {
+impl FileType {
+    pub fn try_read_file(&self, path: &Path) -> Result<Value, FileSystemError> {
+        match self {
+            FileType::JSON => Json.read_file(path),
+            FileType::YAML => Yaml.read_file(path),
+            FileType::TEXT => Text.read_file(path),
+        }
+    }
+}
+
+struct Json;
+pub mod json;
+
+struct Yaml;
+pub mod yaml;
+
+struct Text;
+pub mod text;
+
+pub trait FileTypeReader {
+    fn read_file(&self, path: &Path) -> Result<Value, FileSystemError>;
+}
+
+pub trait DetectFileTypes {
     fn get_file_type(&self) -> Result<FileType, FileSystemError>;
 }
 
-impl FileTypes for Path {
+impl DetectFileTypes for Path {
     fn get_file_type(&self) -> Result<FileType, FileSystemError> {
         match self.extension().and_then(OsStr::to_str) {
             Some(extension) => match extension {
@@ -27,11 +50,5 @@ impl FileTypes for Path {
             },
             None => Err(FileSystemError::UnrecognizableFileType),
         }
-    }
-}
-
-impl FileType {
-    pub fn read_file(&self, path: &Path) -> Result<Value, FileSystemError> {
-        todo!("Based on the self type, use a different implementation to load the file and convert it into a Value.")
     }
 }
