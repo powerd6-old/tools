@@ -46,9 +46,9 @@ impl DetectFileTypes for Path {
                 "json" => Ok(FileType::JSON),
                 "yaml" | "yml" => Ok(FileType::YAML),
                 "txt" | "md" | "hjs" => Ok(FileType::TEXT),
-                _ => Err(FileSystemError::UnrecognizableFileType),
+                _ => Err(FileSystemError::UnsupportedFileType(extension.to_string())),
             },
-            None => Err(FileSystemError::UnrecognizableFileType),
+            None => Err(FileSystemError::UnidentifiableFileType(self.into())),
         }
     }
 }
