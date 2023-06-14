@@ -1,6 +1,9 @@
+use fs::Entry;
 use jsonschema::JSONSchema;
 use serde_json::Value;
 use std::collections::HashMap;
+use std::error::Error;
+use thiserror::Error;
 use url::Url;
 
 // A identifier string. Must be unique within it's context.
@@ -41,3 +44,18 @@ pub struct RenderingContent(String);
 
 /// The file format that the template corresponds to.
 pub struct RenderingFormat(String);
+
+/// The errors that can happen when constructing a Module
+#[derive(Error, Debug)]
+pub enum ModuleError {
+    #[error("unable to read files")]
+    UnableToReadFile(#[from] Box<dyn Error>),
+}
+
+impl TryFrom<Entry> for ModuleType {
+    type Error = ModuleError;
+
+    fn try_from(entry: Entry) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
