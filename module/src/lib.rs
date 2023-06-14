@@ -1,5 +1,5 @@
 use fs::data::FileSystemData;
-use fs::{Entry, EntrySet};
+use fs::Entry;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::error::Error;
