@@ -1,9 +1,10 @@
 use std::{
-    error::{self, Error},
+    error::Error,
     path::{Path, PathBuf},
 };
 
 use path_utils::PathUtils;
+
 use thiserror::Error;
 
 /// The name of the file that corresponds to the root of a sparse directory.
@@ -83,6 +84,20 @@ impl Entry {
                         .filter(|f| !f.is_file_named(UNDERSCORE_FILE_NAME))
                         .collect(),
                 })
+        }
+    }
+    pub fn get_id_from_path(&self) -> String {
+        match self {
+            Entry::File(f) => f.get_name_without_extension(),
+            Entry::Directory {
+                root_file,
+                extra_files: _,
+            } => root_file.get_name_without_extension(),
+            Entry::RenderingDirectory {
+                root_file,
+                extra_files: _,
+                rendering_files: _,
+            } => root_file.get_name_without_extension(),
         }
     }
 }
@@ -207,6 +222,8 @@ pub enum FileSystemError {
     UnidentifiableFileType(Box<Path>),
     #[error("the file could not be opened")]
     UnableToOpenFile(#[from] Box<dyn Error>),
+    #[error("the file `{0}` is the root file for an entry, but is not an object")]
+    RootFileIsNotAnObject(Box<Path>),
 }
 
 impl TryFrom<PathBuf> for FileSystem {
@@ -233,6 +250,7 @@ impl TryFrom<PathBuf> for FileSystem {
     }
 }
 
+pub mod data;
 pub mod file_types;
 pub mod path_utils;
 pub mod sorted;

@@ -10,6 +10,8 @@ pub trait PathUtils {
     fn get_first_child_named(&self, name: &str) -> Option<PathBuf>;
     /// Checks if a file has a certain name, regardless of it's extension
     fn is_file_named(&self, file_name: &str) -> bool;
+    /// Gets the file or directory name, excluding any file extension
+    fn get_name_without_extension(&self) -> String;
 }
 
 impl PathUtils for Path {
@@ -34,6 +36,26 @@ impl PathUtils for Path {
         self.file_name()
             .map(|n| String::from(n.to_str().expect("File names must exist")))
             .map_or(false, |x| x.starts_with(file_name))
+    }
+
+    fn get_name_without_extension(&self) -> String {
+        let name = self
+            .file_name()
+            .expect("Files and Directories should have a name")
+            .to_str()
+            .expect("Name should be valid string");
+        match self.extension() {
+            Some(extension) => name
+                .replace(
+                    extension
+                        .to_str()
+                        .expect("Extension should be a valid string"),
+                    "",
+                )
+                .trim_end_matches('.')
+                .to_string(),
+            None => name.to_string(),
+        }
     }
 }
 
@@ -73,6 +95,19 @@ mod tests {
         assert!(file_a_txt.is_file_named("a"));
         assert!(file_b_txt.is_file_named("b"));
         assert!(file_a_json.is_file_named("a"));
+    }
+
+    #[test]
+    fn it_returns_names_without_extensions_correctly() {
+        let dir: PathBuf = testdir!();
+
+        let file_a_txt = create_file(&dir.join("a.txt"));
+        let file_b_txt = create_file(&dir.join("b.txt"));
+        let file_a_json = create_file(&dir.join("a.json"));
+
+        assert_eq!(file_a_txt.get_name_without_extension(), "a");
+        assert_eq!(file_b_txt.get_name_without_extension(), "b");
+        assert_eq!(file_a_json.get_name_without_extension(), "a");
     }
 
     #[test]
