@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use testdir::testdir;
 
 use fs::{
-    Entry, EntrySet, FileSystem, FileSystemError, Sorted, CONTENTS_DIRECTORY, MODULE,
+    sorted::Sorted, Entry, EntrySet, FileSystem, FileSystemError, CONTENTS_DIRECTORY, MODULE,
     RENDERING_DIRECTORY, TYPES_DIRECTORY, UNDERSCORE_FILE_NAME,
 };
 
