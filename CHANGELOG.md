@@ -11,3 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Rust structs for Modules, Types and Contents
 - Mechanism to map sparse file structures into a virtual representation
+- Add support for JSON files
+- Add support for YAML files
+- Add support for plaintext (markdown, hjs, txt) files
