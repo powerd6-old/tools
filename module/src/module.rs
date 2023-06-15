@@ -2,10 +2,10 @@ use crate::{module_type::ModuleType, JsonObject, ModuleError, DESCRIPTION};
 
 use super::Identifier;
 
-use std::{collections::HashMap, result};
+use std::collections::HashMap;
 
-use fs::{data::FileSystemData, Entry, FileSystem, CONTENTS_DIRECTORY};
-use serde::de::value;
+use fs::{data::FileSystemData, Entry, FileSystem};
+
 use url::Url;
 
 const TITLE: &str = "title";
@@ -85,11 +85,10 @@ impl TryFrom<Entry> for Module {
                                 for (key, value) in contents
                                     .into_iter()
                                     .filter_map(|(k, v)| Some(k).zip(v.as_object()))
+                                    .map(|(k, v)| (k.to_owned(), v.to_owned()))
                                 {
-                                    contents_result.insert(
-                                        key.to_owned().into(),
-                                        HashMap::from_iter(value.to_owned().into_iter()),
-                                    );
+                                    contents_result
+                                        .insert(key.into(), HashMap::from_iter(value.into_iter()));
                                 }
                                 result = result.with_content(contents_result);
                             }
@@ -112,7 +111,7 @@ impl TryFrom<Entry> for Module {
 impl TryFrom<FileSystem> for Module {
     type Error = ModuleError;
 
-    fn try_from(value: FileSystem) -> Result<Self, Self::Error> {
+    fn try_from(_fs: FileSystem) -> Result<Self, Self::Error> {
         todo!()
     }
 }
@@ -123,7 +122,7 @@ mod tests {
 
     use super::*;
     use pretty_assertions::assert_eq;
-    use serde_json::{json, Value};
+    use serde_json::Value;
     use testdir::testdir;
 
     fn create_file(path: &PathBuf, contents: &str) -> PathBuf {
