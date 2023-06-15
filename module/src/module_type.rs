@@ -119,10 +119,6 @@ mod tests {
         std::fs::write(path, contents).expect("File was created correctly");
         path.to_path_buf()
     }
-    fn create_directory(path: &PathBuf) -> PathBuf {
-        std::fs::create_dir(path).expect("Directory was created correctly");
-        path.to_path_buf()
-    }
 
     #[test]
     fn only_required_fields() {
