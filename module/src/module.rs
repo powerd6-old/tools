@@ -4,12 +4,14 @@ use super::Identifier;
 
 use std::{collections::HashMap, result};
 
-use fs::{data::FileSystemData, Entry};
+use fs::{data::FileSystemData, Entry, CONTENTS_DIRECTORY};
+use serde::de::value;
 use url::Url;
 
 const TITLE: &str = "title";
 const SOURCE: &str = "source";
 const TYPES: &str = "types";
+const CONTENTS: &str = "contents";
 
 /// A document that contains information detailing and explaining rules and/or content, meant to be used for rendering by powerd6.
 /// This object does not perform validation into the values of each field and merely serves as a convenient way to manipulate already-built modules in rust.
@@ -62,33 +64,34 @@ impl TryFrom<Entry> for Module {
                         Ok(source_url) => {
                             let mut result =
                                 Module::new(title.to_string(), description.to_string(), source_url);
-                            if let Some(types) = data.get(TYPES) {
-                                match types.as_object() {
-                                    Some(types_map) => {
-                                        let mut types_result: HashMap<Identifier, ModuleType> =
-                                            HashMap::new();
-                                        for (key, value) in types_map {
-                                            match serde_json::from_value(value.clone()) {
-                                                Ok(type_value) => {
-                                                    types_result
-                                                        .insert(key.to_owned().into(), type_value);
-                                                }
-                                                Err(e) => {
-                                                    return Err(ModuleError::UnableToBuildElement(
-                                                        e.into(),
-                                                    ))
-                                                }
-                                            }
+                            if let Some(types) = data.get(TYPES).and_then(|t| t.as_object()) {
+                                let mut types_result: HashMap<Identifier, ModuleType> =
+                                    HashMap::new();
+                                for (key, value) in types {
+                                    match serde_json::from_value(value.clone()) {
+                                        Ok(type_value) => {
+                                            types_result.insert(key.to_owned().into(), type_value);
                                         }
-                                        result = result.with_types(types_result);
-                                    }
-                                    // TODO: Implement contents
-                                    None => {
-                                        return Err(ModuleError::UnableToBuildElement(
-                                            ModuleError::NotAnObject.into(),
-                                        ))
+                                        Err(e) => {
+                                            return Err(ModuleError::UnableToBuildElement(e.into()))
+                                        }
                                     }
                                 }
+                                result = result.with_types(types_result);
+                            }
+                            if let Some(contents) = data.get(CONTENTS).and_then(|t| t.as_object()) {
+                                let mut contents_result: HashMap<Identifier, JsonObject> =
+                                    HashMap::new();
+                                for (key, value) in contents
+                                    .into_iter()
+                                    .filter_map(|(k, v)| Some(k).zip(v.as_object()))
+                                {
+                                    contents_result.insert(
+                                        key.to_owned().into(),
+                                        HashMap::from_iter(value.to_owned().into_iter()),
+                                    );
+                                }
+                                result = result.with_content(contents_result);
                             }
                             Ok(result)
                         }
@@ -200,7 +203,7 @@ mod tests {
             )
             .with_content(HashMap::from([(
                 Identifier("a".to_string()),
-                JsonObject::from([("a".to_string(), Value::String("value".to_string()))])
+                JsonObject::from([("key".to_string(), Value::String("value".to_string()))])
             )]))
         )
     }
