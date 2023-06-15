@@ -82,6 +82,7 @@ impl TryFrom<Entry> for Module {
                                         }
                                         result = result.with_types(types_result);
                                     }
+                                    // TODO: Implement contents
                                     None => {
                                         return Err(ModuleError::UnableToBuildElement(
                                             ModuleError::NotAnObject.into(),
@@ -111,6 +112,7 @@ mod tests {
 
     use super::*;
     use pretty_assertions::assert_eq;
+    use serde_json::{json, Value};
     use testdir::testdir;
 
     fn create_file(path: &PathBuf, contents: &str) -> PathBuf {
@@ -141,8 +143,65 @@ mod tests {
     }
 
     #[test]
-    fn with_types() {}
+    fn with_types() {
+        let dir = testdir!();
+
+        assert_eq!(
+            Module::try_from(Entry::File(create_file(
+                &dir.join("test.json"),
+                r#"{
+                    "title": "title",
+                    "description": "description",
+                    "source": "https://my.source",
+                    "types": {
+                      "a": {
+                        "id": "a",
+                        "description": "my description"
+                      }
+                    }
+                  }"#
+            )))
+            .unwrap(),
+            Module::new(
+                "title".to_string(),
+                "description".to_string(),
+                Url::parse("https://my.source").unwrap()
+            )
+            .with_types(HashMap::from([(
+                Identifier("a".to_string()),
+                ModuleType::new(Identifier("a".to_string()), "my description".to_string())
+            )]))
+        )
+    }
 
     #[test]
-    fn with_contents() {}
+    fn with_contents() {
+        let dir = testdir!();
+
+        assert_eq!(
+            Module::try_from(Entry::File(create_file(
+                &dir.join("test.json"),
+                r#"{
+                    "title": "title",
+                    "description": "description",
+                    "source": "https://my.source",
+                    "contents": {
+                      "a": {
+                        "key": "value"
+                      }
+                    }
+                  }"#
+            )))
+            .unwrap(),
+            Module::new(
+                "title".to_string(),
+                "description".to_string(),
+                Url::parse("https://my.source").unwrap()
+            )
+            .with_content(HashMap::from([(
+                Identifier("a".to_string()),
+                JsonObject::from([("a".to_string(), Value::String("value".to_string()))])
+            )]))
+        )
+    }
 }
