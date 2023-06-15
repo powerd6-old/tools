@@ -1,7 +1,3 @@
-use super::RENDERING;
-
-use super::SCHEMA;
-
 use super::DESCRIPTION;
 
 use super::ModuleError;
@@ -14,6 +10,9 @@ use std::collections::HashMap;
 use serde_json::Value;
 
 use super::Identifier;
+
+const SCHEMA: &str = "schema";
+const RENDERING: &str = "rendering";
 
 /// The aggregation of properties, their value-types and their rendering rules.
 pub struct ModuleType {

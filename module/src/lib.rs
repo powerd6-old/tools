@@ -6,8 +6,6 @@ use thiserror::Error;
 use url::Url;
 
 const DESCRIPTION: &str = "description";
-const SCHEMA: &str = "schema";
-const RENDERING: &str = "rendering";
 
 // A identifier string. Must be unique within it's context.
 pub struct Identifier(String);
