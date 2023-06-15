@@ -4,7 +4,7 @@ use super::Identifier;
 
 use std::{collections::HashMap, result};
 
-use fs::{data::FileSystemData, Entry, CONTENTS_DIRECTORY};
+use fs::{data::FileSystemData, Entry, FileSystem, CONTENTS_DIRECTORY};
 use serde::de::value;
 use url::Url;
 
@@ -106,6 +106,14 @@ impl TryFrom<Entry> for Module {
             },
             Err(e) => Err(ModuleError::UnableToBuildElement(e.into())),
         }
+    }
+}
+
+impl TryFrom<FileSystem> for Module {
+    type Error = ModuleError;
+
+    fn try_from(value: FileSystem) -> Result<Self, Self::Error> {
+        todo!()
     }
 }
 
