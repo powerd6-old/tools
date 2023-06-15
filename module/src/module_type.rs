@@ -10,16 +10,12 @@ use std::collections::HashMap;
 
 use serde_json::Value;
 
-use super::Identifier;
-
 const SCHEMA: &str = "schema";
 const RENDERING: &str = "rendering";
 
 /// The aggregation of properties, their value-types and their rendering rules.
 #[derive(Deserialize, Debug, PartialEq)]
 pub struct ModuleType {
-    /// The unique identifier of the type.
-    pub id: Identifier,
     /// The human-readable description of what the type represents.
     pub description: String,
     /// The json-schema used to validate the type.
@@ -29,9 +25,8 @@ pub struct ModuleType {
 }
 
 impl ModuleType {
-    pub fn new(id: Identifier, description: String) -> Self {
+    pub fn new(description: String) -> Self {
         ModuleType {
-            id,
             description,
             schema: None,
             rendering: None,
@@ -75,10 +70,7 @@ impl TryFrom<Entry> for ModuleType {
             Ok(value) => match value.as_object() {
                 Some(data) => match data.get(DESCRIPTION).and_then(|d| d.as_str()) {
                     Some(description) => {
-                        let mut result = ModuleType::new(
-                            entry.get_id_from_path().into(),
-                            description.to_string(),
-                        );
+                        let mut result = ModuleType::new(description.to_string());
                         if let Some(schema) = data.get(SCHEMA) {
                             result = result.with_schema(schema.clone());
                         }
@@ -130,10 +122,7 @@ mod tests {
                 r#"{"description": "this is a description"}"#
             )))
             .unwrap(),
-            ModuleType::new(
-                Identifier("test".to_string()),
-                "this is a description".to_string()
-            )
+            ModuleType::new("this is a description".to_string())
         )
     }
 
@@ -160,11 +149,7 @@ mod tests {
                   }"#
             )))
             .unwrap(),
-            ModuleType::new(
-                Identifier("test".to_string()),
-                "this is a description".to_string()
-            )
-            .with_schema(json!({
+            ModuleType::new("this is a description".to_string()).with_schema(json!({
               "$schema": "https://json-schema.org/draft/2020-12/schema",
               "title": "Person",
               "type": "object",
@@ -193,11 +178,7 @@ mod tests {
                   }"#
             )))
             .unwrap(),
-            ModuleType::new(
-                Identifier("test".to_string()),
-                "this is a description".to_string()
-            )
-            .with_rendering(HashMap::from([(
+            ModuleType::new("this is a description".to_string()).with_rendering(HashMap::from([(
                 RenderingFormat("txt".to_string()),
                 RenderingContent("this is my txt template".to_string())
             )]))

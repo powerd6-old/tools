@@ -169,7 +169,7 @@ mod tests {
             )
             .with_types(HashMap::from([(
                 Identifier("a".to_string()),
-                ModuleType::new(Identifier("a".to_string()), "my description".to_string())
+                ModuleType::new("my description".to_string())
             )]))
         )
     }
