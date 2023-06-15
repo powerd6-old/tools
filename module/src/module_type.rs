@@ -4,6 +4,7 @@ use super::ModuleError;
 
 use fs::data::FileSystemData;
 use fs::Entry;
+use serde::Deserialize;
 
 use std::collections::HashMap;
 
@@ -15,6 +16,7 @@ const SCHEMA: &str = "schema";
 const RENDERING: &str = "rendering";
 
 /// The aggregation of properties, their value-types and their rendering rules.
+#[derive(Deserialize)]
 pub struct ModuleType {
     /// The unique identifier of the type.
     pub id: Identifier,
@@ -46,6 +48,7 @@ impl ModuleType {
 }
 
 /// The template to be used for the specified format.
+#[derive(Deserialize)]
 pub struct RenderingContent(String);
 
 impl From<String> for RenderingContent {
@@ -55,7 +58,7 @@ impl From<String> for RenderingContent {
 }
 
 /// The file format that the template corresponds to.
-#[derive(Eq, Hash, PartialEq)]
+#[derive(Eq, Hash, PartialEq, Deserialize)]
 pub struct RenderingFormat(String);
 
 impl From<String> for RenderingFormat {
@@ -105,7 +108,7 @@ impl TryFrom<Entry> for ModuleType {
                     }
                     None => Err(ModuleError::MissingRequiredField(DESCRIPTION.to_string())),
                 },
-                None => Err(ModuleError::MissingRequiredField(DESCRIPTION.to_string())),
+                None => Err(ModuleError::NotAnObject),
             },
             Err(e) => Err(ModuleError::UnableToBuildElement(e.into())),
         }

@@ -217,6 +217,7 @@ name = "module"
 version = "0.1.0"
 dependencies = [
  "fs",
+ "serde",
  "serde_json",
  "thiserror",
  "url",
