@@ -5,7 +5,8 @@
     "cSpell.words": [
         "jsonschema",
         "powerd6",
-        "testdir"
+        "testdir",
+        "thiserror"
     ],
     "rust-analyzer.check.command": "clippy",
     "[rust]": {
