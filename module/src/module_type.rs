@@ -16,7 +16,7 @@ const SCHEMA: &str = "schema";
 const RENDERING: &str = "rendering";
 
 /// The aggregation of properties, their value-types and their rendering rules.
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug, PartialEq)]
 pub struct ModuleType {
     /// The unique identifier of the type.
     pub id: Identifier,
@@ -48,7 +48,7 @@ impl ModuleType {
 }
 
 /// The template to be used for the specified format.
-#[derive(Deserialize)]
+#[derive(Debug, PartialEq, Eq, Deserialize)]
 pub struct RenderingContent(String);
 
 impl From<String> for RenderingContent {
@@ -58,7 +58,7 @@ impl From<String> for RenderingContent {
 }
 
 /// The file format that the template corresponds to.
-#[derive(Eq, Hash, PartialEq, Deserialize)]
+#[derive(Debug, Eq, Hash, PartialEq, Deserialize)]
 pub struct RenderingFormat(String);
 
 impl From<String> for RenderingFormat {
@@ -73,7 +73,7 @@ impl TryFrom<Entry> for ModuleType {
     fn try_from(entry: Entry) -> Result<Self, Self::Error> {
         match entry.try_get_data() {
             Ok(value) => match value.as_object() {
-                Some(data) => match data.get(DESCRIPTION) {
+                Some(data) => match data.get(DESCRIPTION).and_then(|d| d.as_str()) {
                     Some(description) => {
                         let mut result = ModuleType::new(
                             entry.get_id_from_path().into(),
@@ -82,27 +82,18 @@ impl TryFrom<Entry> for ModuleType {
                         if let Some(schema) = data.get(SCHEMA) {
                             result = result.with_schema(schema.clone());
                         }
-                        if let Some(rendering) = data.get(RENDERING) {
-                            match rendering.as_object() {
-                                Some(rendering_map) => {
-                                    let mut rendering_result: HashMap<
-                                        RenderingFormat,
-                                        RenderingContent,
-                                    > = HashMap::new();
-                                    for (key, value) in rendering_map {
-                                        rendering_result.insert(
-                                            key.to_owned().into(),
-                                            value.to_string().into(),
-                                        );
-                                    }
-                                    result = result.with_rendering(rendering_result)
-                                }
-                                None => {
-                                    return Err(ModuleError::UnableToBuildElement(
-                                        ModuleError::NotAnObject.into(),
-                                    ))
-                                }
+                        if let Some(rendering) = data.get(RENDERING).and_then(|r| r.as_object()) {
+                            let mut rendering_result: HashMap<RenderingFormat, RenderingContent> =
+                                HashMap::new();
+                            for (key, value) in rendering
+                                .into_iter()
+                                .filter_map(|(k, v)| Some(k).zip(v.as_str()))
+                            {
+                                rendering_result
+                                    .insert(key.to_owned().into(), value.to_string().into());
                             }
+
+                            result = result.with_rendering(rendering_result)
                         }
                         Ok(result)
                     }
@@ -112,5 +103,108 @@ impl TryFrom<Entry> for ModuleType {
             },
             Err(e) => Err(ModuleError::UnableToBuildElement(e.into())),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::PathBuf;
+
+    use super::*;
+    use pretty_assertions::assert_eq;
+    use serde_json::json;
+    use testdir::testdir;
+
+    fn create_file(path: &PathBuf, contents: &str) -> PathBuf {
+        std::fs::write(path, contents).expect("File was created correctly");
+        path.to_path_buf()
+    }
+    fn create_directory(path: &PathBuf) -> PathBuf {
+        std::fs::create_dir(path).expect("Directory was created correctly");
+        path.to_path_buf()
+    }
+
+    #[test]
+    fn only_required_fields() {
+        let dir = testdir!();
+
+        assert_eq!(
+            ModuleType::try_from(Entry::File(create_file(
+                &dir.join("test.json"),
+                r#"{"description": "this is a description"}"#
+            )))
+            .unwrap(),
+            ModuleType::new(
+                Identifier("test".to_string()),
+                "this is a description".to_string()
+            )
+        )
+    }
+
+    #[test]
+    fn with_schema() {
+        let dir = testdir!();
+
+        assert_eq!(
+            ModuleType::try_from(Entry::File(create_file(
+                &dir.join("test.json"),
+                r#"{
+                    "description": "this is a description",
+                    "schema": {
+                      "$schema": "https://json-schema.org/draft/2020-12/schema",
+                      "title": "Person",
+                      "type": "object",
+                      "properties": {
+                        "fullName": {
+                          "type": "string",
+                          "description": "The person's name."
+                        }
+                      }
+                    }
+                  }"#
+            )))
+            .unwrap(),
+            ModuleType::new(
+                Identifier("test".to_string()),
+                "this is a description".to_string()
+            )
+            .with_schema(json!({
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "title": "Person",
+              "type": "object",
+              "properties": {
+                "fullName": {
+                  "type": "string",
+                  "description": "The person's name."
+                }
+              }
+            }))
+        )
+    }
+
+    #[test]
+    fn with_rendering() {
+        let dir = testdir!();
+
+        assert_eq!(
+            ModuleType::try_from(Entry::File(create_file(
+                &dir.join("test.json"),
+                r#"{
+                    "description": "this is a description",
+                    "rendering": {
+                      "txt": "this is my txt template"
+                    }
+                  }"#
+            )))
+            .unwrap(),
+            ModuleType::new(
+                Identifier("test".to_string()),
+                "this is a description".to_string()
+            )
+            .with_rendering(HashMap::from([(
+                RenderingFormat("txt".to_string()),
+                RenderingContent("this is my txt template".to_string())
+            )]))
+        )
     }
 }

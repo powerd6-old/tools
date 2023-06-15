@@ -217,8 +217,10 @@ name = "module"
 version = "0.1.0"
 dependencies = [
  "fs",
+ "pretty_assertions",
  "serde",
  "serde_json",
+ "testdir",
  "thiserror",
  "url",
 ]

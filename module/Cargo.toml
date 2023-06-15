@@ -10,3 +10,7 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 url = { workspace = true }
 thiserror = { workspace = true }
+
+[dev-dependencies]
+testdir = { workspace = true }
+pretty_assertions = { workspace = true }
