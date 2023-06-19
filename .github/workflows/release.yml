@@ -1,0 +1,42 @@
+name: Prepare Release
+
+on:
+    workflow_dispatch:
+        inputs:
+            version:
+                description: 'New version'
+                required: true
+                type: string
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    prepare-pull-request:
+        runs-on: ubuntu-latest
+        permissions:
+          contents: write
+          pull-requests: write
+        steps:
+            - uses: actions/checkout@v3.3.0
+            - name: Update CHANGELOG.md
+              run: |-
+                today="$(date '+%Y-%m-%d')"
+                sed -i -e "s/## \[Unreleased\]/## \[Unreleased\]\n\n## [${{ inputs.version }}] - $today/g" 'CHANGELOG.md'
+            - name: Push branch
+              uses: stefanzweifel/git-auto-commit-action@v4
+              with:
+                commit_message: "Update changelog: v${{ inputs.version }}"
+                commit_user_name: Powerd6 Automation
+                commit_user_email: release@powerd6.org
+                create_branch: true
+                branch: "release-v${{ inputs.version }}"
+            - name: Create Pull Request
+              uses: peter-evans/create-pull-request@v5
+              with:
+                branch: "release-v${{ inputs.version }}"
+                title: "Release: ${{ inputs.version }}"
+                body: "Automated changes for release of v${{ inputs.version }}"
+                labels: |-
+                  🔒 staff only
