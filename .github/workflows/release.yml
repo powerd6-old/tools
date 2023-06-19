@@ -1,0 +1,33 @@
+name: Release
+
+on:
+    workflow_dispatch:
+        inputs:
+            version:
+                description: 'New version'
+                required: true
+                type: string
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    update-changelog:
+        runs-on: ubuntu-latest
+        permissions:
+          contents: write
+        steps:
+            - uses: actions/checkout@v3.3.0
+            - name: Update CHANGELOG.md
+              run: |-
+                today="$(date '+%Y-%m-%d')"
+                sed -i "" "s/## \[Unreleased\]/## \[Unreleased\]\n\n## [${{ inputs.version }}] - $today/g" 'CHANGELOG.md'
+            - uses: stefanzweifel/git-auto-commit-action@v4
+              with:
+                commit_message: "Release: ${{ inputs.version }}"
+                commit_options: '--no-verify --signoff'
+                commit_user_name: Powerd6 Automation
+                commit_user_email: release@powerd6.org
+                commit_author: Powerd6 Automation <release@powerd6.org>
+                tagging_message: "v${{ inputs.version }}"
