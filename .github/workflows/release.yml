@@ -13,46 +13,6 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    build:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v3.3.0
-        - uses: actions/cache@v3
-          with:
-            path: |
-              ~/.cargo/bin/
-              ~/.cargo/registry/index/
-              ~/.cargo/registry/cache/
-              ~/.cargo/git/db/
-            key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-        - uses: actions/cache@v3
-          with:
-            path: |
-              target/
-            key: ${{ runner.os }}-cargo-target-${{ hashFiles('**/Cargo.lock') }}
-        - name: Build (w/ release flag)
-          run: |-
-            cargo build --workspace
-            build:
-              runs-on: ubuntu-latest
-              steps:
-                - uses: actions/checkout@v3.3.0
-                - uses: actions/cache@v3
-                  with:
-                    path: |
-                      ~/.cargo/bin/
-                      ~/.cargo/registry/index/
-                      ~/.cargo/registry/cache/
-                      ~/.cargo/git/db/
-                    key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-                - uses: actions/cache@v3
-                  with:
-                    path: |
-                      target/
-                    key: ${{ runner.os }}-cargo-target-${{ hashFiles('**/Cargo.lock') }}
-                - name: Build
-                  run: |-
-                    cargo build --workspace --release
     update-changelog:
         runs-on: ubuntu-latest
         permissions:
