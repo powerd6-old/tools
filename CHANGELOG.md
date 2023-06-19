@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Renamed binary from `tools` to `powerd6_cli`
+
 ## [0.1.0] - 2023-06-19
 
 ### Added
