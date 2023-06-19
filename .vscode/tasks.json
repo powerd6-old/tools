@@ -1,0 +1,28 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Coverage",
+            "type": "shell",
+            "command": "scripts/coverage.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "Docs",
+            "type": "shell",
+            "command": "scripts/docs.sh",
+            "problemMatcher": []
+        },
+        {
+            "type": "cargo",
+            "command": "test",
+            "args": ["--workspace"],
+            "problemMatcher": [
+                "$rustc",
+                "$rust-panic"
+            ],
+            "group": "test",
+            "label": "rust: cargo test"
+        }
+    ]
+}
