@@ -182,10 +182,10 @@ impl TryFrom<FileSystem> for Module {
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
+    use std::{collections::BTreeMap, path::PathBuf};
 
     use super::*;
-    use fs::{EntrySet, CONTENTS_DIRECTORY};
+    use fs::{CONTENTS_DIRECTORY, MODULE, TYPES_DIRECTORY};
     use pretty_assertions::assert_eq;
     use serde_json::Value;
     use testdir::testdir;
@@ -288,41 +288,41 @@ mod tests {
     fn from_file_system() {
         let dir = testdir!();
 
-        let module_entry = Entry::File(create_file(
-            &dir.join("module.json"),
+        create_file(
+            &dir.join(format!("{}.json", MODULE)),
             r#"{
-                    "title": "title",
-                    "description": "description",
-                    "source": "https://my.source",
-                    "types": {
-                      "a": {
-                        "id": "a",
-                        "description": "my description"
-                      }
-                    },
-                    "contents": {
-                      "a": {
-                        "key": "value"
-                      }
-                    }
-                  }"#,
-        ));
+                "title": "title",
+                "description": "description",
+                "source": "https://my.source",
+                "types": {
+                  "a": {
+                    "id": "a",
+                    "description": "my description"
+                  }
+                },
+                "contents": {
+                  "a": {
+                    "key": "value"
+                  }
+                }
+              }"#,
+        );
 
-        let types_dir = create_directory(&dir.join(TYPES));
+        let types_dir = create_directory(&dir.join(TYPES_DIRECTORY));
         create_file(
             &types_dir.join("b.json"),
             r#"{
-                    "key": "value"
-                }"#,
+                "id": "b",
+                "description": "my other description"
+              }"#,
         );
 
         let contents_dir = create_directory(&dir.join(CONTENTS_DIRECTORY));
         create_file(
             &contents_dir.join("b.json"),
             r#"{
-                    "id": "b",
-                    "description": "my other description"
-                }"#,
+                "key": "value"
+              }"#,
         );
 
         let file_system =
@@ -358,6 +358,16 @@ mod tests {
         assert_eq!(actual.title, expected.title);
         assert_eq!(actual.description, expected.description);
         assert_eq!(actual.source, expected.source);
-        // TODO: check types and contents
+        let sorted_actual_types: BTreeMap<Identifier, ModuleType> =
+            actual.types.expect("Must exist").into_iter().collect();
+        let sorted_expected_types: BTreeMap<Identifier, ModuleType> =
+            expected.types.expect("Must exist").into_iter().collect();
+        assert_eq!(sorted_actual_types, sorted_expected_types);
+
+        let sorted_actual_content: BTreeMap<Identifier, JsonObject> =
+            actual.content.expect("Must exist").into_iter().collect();
+        let sorted_expected_content: BTreeMap<Identifier, JsonObject> =
+            expected.content.expect("Must exist").into_iter().collect();
+        assert_eq!(sorted_actual_content, sorted_expected_content);
     }
 }
