@@ -15,3 +15,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for JSON files
 - Add support for YAML files
 - Add support for plaintext (markdown, hjs, txt) files
+- Add CLI to build modules from directories
