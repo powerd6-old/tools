@@ -22,13 +22,13 @@ pub const CONTENTS_DIRECTORY: &str = "contents";
 #[derive(Debug, PartialEq, Eq)]
 pub struct FileSystem {
     /// The root directory this FileSystem was built from.
-    root_directory: PathBuf,
+    pub root_directory: PathBuf,
     // The module information
-    module: Entry,
+    pub module: Entry,
     // An optional set of entries that define types.
-    types: Option<EntrySet>,
+    pub types: Option<EntrySet>,
     // An optional set of entries that define contents.
-    contents: Option<EntrySet>,
+    pub contents: Option<EntrySet>,
 }
 
 impl FileSystem {
@@ -107,7 +107,7 @@ impl Entry {
 #[derive(Debug, PartialEq, Eq)]
 pub struct EntrySet {
     base_path: PathBuf,
-    entries: Vec<Entry>,
+    pub entries: Vec<Entry>,
 }
 
 impl EntrySet {

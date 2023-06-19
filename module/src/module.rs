@@ -111,8 +111,72 @@ impl TryFrom<Entry> for Module {
 impl TryFrom<FileSystem> for Module {
     type Error = ModuleError;
 
-    fn try_from(_fs: FileSystem) -> Result<Self, Self::Error> {
-        todo!()
+    fn try_from(fs: FileSystem) -> Result<Self, Self::Error> {
+        match TryInto::<Module>::try_into(fs.module) {
+            Ok(mut module) => {
+                if let Some(fs_types) = fs.types {
+                    let types_entries = fs_types.entries.into_iter().filter_map(|e| {
+                        Some(Identifier(e.get_id_from_path()))
+                            .zip(TryInto::<ModuleType>::try_into(e).ok())
+                    });
+
+                    match module.types.as_ref() {
+                        None => module = module.with_types(types_entries.collect()),
+                        Some(types_from_module) => {
+                            let mut merged_types: HashMap<Identifier, ModuleType> = HashMap::new();
+                            for (k, v) in types_from_module {
+                                merged_types.insert(k.clone(), v.clone());
+                            }
+                            for (k, v) in types_entries {
+                                merged_types.insert(k, v);
+                            }
+                            module = module.with_types(merged_types);
+                        }
+                    }
+                }
+
+                if let Some(fs_contents) = fs.contents {
+                    let fs_content_data = fs_contents.entries.into_iter().filter_map(|e| {
+                        Some(Identifier(e.get_id_from_path())).zip(e.try_get_data().ok())
+                    });
+
+                    let mut content_entries: HashMap<Identifier, JsonObject> = HashMap::new();
+                    for (identifier, data) in fs_content_data {
+                        match data.as_object() {
+                            Some(fs_content_data_map) => {
+                                content_entries.insert(
+                                    identifier,
+                                    JsonObject::from_iter(
+                                        fs_content_data_map
+                                            .into_iter()
+                                            .map(|(k, v)| (k.clone(), v.clone())),
+                                    ),
+                                );
+                            }
+                            None => return Err(ModuleError::NotAnObject),
+                        }
+                    }
+
+                    match module.content.as_ref() {
+                        None => module = module.with_content(content_entries),
+                        Some(content_from_module) => {
+                            let mut merged_content: HashMap<Identifier, JsonObject> =
+                                HashMap::new();
+                            for (k, v) in content_from_module {
+                                merged_content.insert(k.clone(), v.clone());
+                            }
+                            for (k, v) in content_entries {
+                                merged_content.insert(k.clone(), v.clone());
+                            }
+                            module = module.with_content(merged_content);
+                        }
+                    }
+                }
+
+                Ok(module)
+            }
+            Err(e) => Err(ModuleError::UnableToBuildElement(e.into())),
+        }
     }
 }
 
@@ -121,12 +185,17 @@ mod tests {
     use std::path::PathBuf;
 
     use super::*;
+    use fs::{EntrySet, CONTENTS_DIRECTORY};
     use pretty_assertions::assert_eq;
     use serde_json::Value;
     use testdir::testdir;
 
     fn create_file(path: &PathBuf, contents: &str) -> PathBuf {
         std::fs::write(path, contents).expect("File was created correctly");
+        path.to_path_buf()
+    }
+    fn create_directory(path: &PathBuf) -> PathBuf {
+        std::fs::create_dir(path).expect("Directory was created correctly");
         path.to_path_buf()
     }
 
@@ -213,5 +282,82 @@ mod tests {
                 JsonObject::from([("key".to_string(), Value::String("value".to_string()))])
             )]))
         )
+    }
+
+    #[test]
+    fn from_file_system() {
+        let dir = testdir!();
+
+        let module_entry = Entry::File(create_file(
+            &dir.join("module.json"),
+            r#"{
+                    "title": "title",
+                    "description": "description",
+                    "source": "https://my.source",
+                    "types": {
+                      "a": {
+                        "id": "a",
+                        "description": "my description"
+                      }
+                    },
+                    "contents": {
+                      "a": {
+                        "key": "value"
+                      }
+                    }
+                  }"#,
+        ));
+
+        let types_dir = create_directory(&dir.join(TYPES));
+        create_file(
+            &types_dir.join("b.json"),
+            r#"{
+                    "key": "value"
+                }"#,
+        );
+
+        let contents_dir = create_directory(&dir.join(CONTENTS_DIRECTORY));
+        create_file(
+            &contents_dir.join("b.json"),
+            r#"{
+                    "id": "b",
+                    "description": "my other description"
+                }"#,
+        );
+
+        let file_system =
+            FileSystem::try_from(dir).expect("FileSystem from tempdir should be valid");
+
+        let actual = Module::try_from(file_system).unwrap();
+        let expected = Module::new(
+            "title".to_string(),
+            "description".to_string(),
+            Url::parse("https://my.source").unwrap(),
+        )
+        .with_types(HashMap::from([
+            (
+                Identifier("a".to_string()),
+                ModuleType::new("my description".to_string()),
+            ),
+            (
+                Identifier("b".to_string()),
+                ModuleType::new("my other description".to_string()),
+            ),
+        ]))
+        .with_content(HashMap::from([
+            (
+                Identifier("a".to_string()),
+                JsonObject::from([("key".to_string(), Value::String("value".to_string()))]),
+            ),
+            (
+                Identifier("b".to_string()),
+                JsonObject::from([("key".to_string(), Value::String("value".to_string()))]),
+            ),
+        ]));
+
+        assert_eq!(actual.title, expected.title);
+        assert_eq!(actual.description, expected.description);
+        assert_eq!(actual.source, expected.source);
+        // TODO: check types and contents
     }
 }

@@ -7,7 +7,7 @@ use thiserror::Error;
 const DESCRIPTION: &str = "description";
 
 // A identifier string. Must be unique within it's context.
-#[derive(Debug, Eq, Hash, PartialEq, Deserialize)]
+#[derive(Debug, Eq, Hash, PartialEq, Deserialize, Clone, PartialOrd, Ord)]
 pub struct Identifier(String);
 
 impl From<String> for Identifier {

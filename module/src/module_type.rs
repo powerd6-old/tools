@@ -14,7 +14,7 @@ const SCHEMA: &str = "schema";
 const RENDERING: &str = "rendering";
 
 /// The aggregation of properties, their value-types and their rendering rules.
-#[derive(Deserialize, Debug, PartialEq)]
+#[derive(Deserialize, Debug, PartialEq, Clone)]
 pub struct ModuleType {
     /// The human-readable description of what the type represents.
     pub description: String,
@@ -43,7 +43,7 @@ impl ModuleType {
 }
 
 /// The template to be used for the specified format.
-#[derive(Debug, PartialEq, Eq, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Deserialize, Clone)]
 pub struct RenderingContent(String);
 
 impl From<String> for RenderingContent {
@@ -53,7 +53,7 @@ impl From<String> for RenderingContent {
 }
 
 /// The file format that the template corresponds to.
-#[derive(Debug, Eq, Hash, PartialEq, Deserialize)]
+#[derive(Debug, Eq, Hash, PartialEq, Deserialize, Clone)]
 pub struct RenderingFormat(String);
 
 impl From<String> for RenderingFormat {
