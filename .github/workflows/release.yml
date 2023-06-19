@@ -38,3 +38,5 @@ jobs:
                 branch: "release-v${{ inputs.version }}"
                 title: "Release: ${{ inputs.version }}"
                 body: "Automated changes for release of v${{ inputs.version }}"
+                labels: |-
+                  🔒 staff only
