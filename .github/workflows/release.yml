@@ -22,7 +22,7 @@ jobs:
             - name: Update CHANGELOG.md
               run: |-
                 today="$(date '+%Y-%m-%d')"
-                sed -i "" "s/## \[Unreleased\]/## \[Unreleased\]\n\n## [${{ inputs.version }}] - $today/g" 'CHANGELOG.md'
+                sed -i -e "s/## \[Unreleased\]/## \[Unreleased\]\n\n## [${{ inputs.version }}] - $today/g" 'CHANGELOG.md'
             - uses: stefanzweifel/git-auto-commit-action@v4
               with:
                 commit_message: "Release: ${{ inputs.version }}"
