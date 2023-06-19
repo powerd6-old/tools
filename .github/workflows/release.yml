@@ -35,6 +35,7 @@ jobs:
             - name: Create Pull Request
               uses: peter-evans/create-pull-request@v5
               with:
+                base: main
                 branch: "release-v${{ inputs.version }}"
                 title: "Release: ${{ inputs.version }}"
                 body: "Automated changes for release of v${{ inputs.version }}"
