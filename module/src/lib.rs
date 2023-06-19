@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 use std::error::Error;
@@ -7,7 +7,7 @@ use thiserror::Error;
 const DESCRIPTION: &str = "description";
 
 // A identifier string. Must be unique within it's context.
-#[derive(Debug, Eq, Hash, PartialEq, Deserialize, Clone, PartialOrd, Ord)]
+#[derive(Debug, Eq, Hash, PartialEq, Deserialize, Clone, PartialOrd, Ord, Serialize)]
 pub struct Identifier(String);
 
 impl From<String> for Identifier {

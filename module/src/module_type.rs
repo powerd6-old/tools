@@ -5,6 +5,7 @@ use super::ModuleError;
 use fs::data::FileSystemData;
 use fs::Entry;
 use serde::Deserialize;
+use serde::Serialize;
 
 use std::collections::HashMap;
 
@@ -14,13 +15,15 @@ const SCHEMA: &str = "schema";
 const RENDERING: &str = "rendering";
 
 /// The aggregation of properties, their value-types and their rendering rules.
-#[derive(Deserialize, Debug, PartialEq, Clone)]
+#[derive(Deserialize, Debug, PartialEq, Clone, Serialize)]
 pub struct ModuleType {
     /// The human-readable description of what the type represents.
     pub description: String,
     /// The json-schema used to validate the type.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub schema: Option<Value>,
     /// The rendering code for all the supported formats.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub rendering: Option<HashMap<RenderingFormat, RenderingContent>>,
 }
 
@@ -43,7 +46,7 @@ impl ModuleType {
 }
 
 /// The template to be used for the specified format.
-#[derive(Debug, PartialEq, Eq, Deserialize, Clone)]
+#[derive(Debug, PartialEq, Eq, Deserialize, Clone, Serialize)]
 pub struct RenderingContent(String);
 
 impl From<String> for RenderingContent {
@@ -53,7 +56,7 @@ impl From<String> for RenderingContent {
 }
 
 /// The file format that the template corresponds to.
-#[derive(Debug, Eq, Hash, PartialEq, Deserialize, Clone)]
+#[derive(Debug, Eq, Hash, PartialEq, Deserialize, Clone, Serialize)]
 pub struct RenderingFormat(String);
 
 impl From<String> for RenderingFormat {

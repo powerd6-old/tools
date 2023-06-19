@@ -6,6 +6,7 @@ use std::collections::HashMap;
 
 use fs::{data::FileSystemData, Entry, FileSystem};
 
+use serde::Serialize;
 use url::Url;
 
 const TITLE: &str = "title";
@@ -15,7 +16,7 @@ const CONTENTS: &str = "contents";
 
 /// A document that contains information detailing and explaining rules and/or content, meant to be used for rendering by powerd6.
 /// This object does not perform validation into the values of each field and merely serves as a convenient way to manipulate already-built modules in rust.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct Module {
     /// The title of the module.
     pub title: String,
@@ -24,8 +25,10 @@ pub struct Module {
     /// A hyperlink to the where the module is hosted.
     pub source: Url,
     /// A collection of types that are defined in this module.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub types: Option<HashMap<Identifier, ModuleType>>,
     /// A collection of contents defined in this module, the keys of the map are the unique identifiers of the content pieces.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub content: Option<HashMap<Identifier, JsonObject>>,
 }
 
