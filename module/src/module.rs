@@ -118,8 +118,9 @@ impl TryFrom<FileSystem> for Module {
         match TryInto::<Module>::try_into(fs.module) {
             Ok(mut module) => {
                 if let Some(fs_types) = fs.types {
-                    let types_entries = fs_types.entries.into_iter().filter_map(|e| {
-                        Some(Identifier(e.get_id_from_path()))
+                    let types_entries = fs_types.entries.clone().into_iter().filter_map(|e| {
+                        e.get_id_from_nested_path(&fs_types)
+                            .map(Identifier)
                             .zip(TryInto::<ModuleType>::try_into(e).ok())
                     });
 
@@ -139,8 +140,10 @@ impl TryFrom<FileSystem> for Module {
                 }
 
                 if let Some(fs_contents) = fs.contents {
-                    let fs_content_data = fs_contents.entries.into_iter().filter_map(|e| {
-                        Some(Identifier(e.get_id_from_path())).zip(e.try_get_data().ok())
+                    let fs_content_data = fs_contents.entries.clone().into_iter().filter_map(|e| {
+                        e.get_id_from_nested_path(&fs_contents)
+                            .map(Identifier)
+                            .zip(e.try_get_data().ok())
                     });
 
                     let mut content_entries: HashMap<Identifier, JsonObject> = HashMap::new();
