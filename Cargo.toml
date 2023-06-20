@@ -12,6 +12,8 @@ clap = { workspace = true, features = ["derive"] }
 fs = { workspace = true }
 module = { workspace = true }
 serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
 
 [workspace]
 members = ["fs", "module"]
@@ -30,4 +32,6 @@ serde_json = "1.0.96"
 serde_yaml = "0.9.21"
 testdir = "0.7.3"
 thiserror = "1.0"
+tracing = "0.1.37"
+tracing-subscriber = "0.3.17"
 url = { version = "2.3.1", features = ["serde"] }

@@ -1,14 +1,24 @@
 extern crate clap;
 extern crate fs;
 extern crate module;
+extern crate tracing;
+extern crate tracing_subscriber;
 
 use std::{convert::TryFrom, error::Error, ffi::OsString, fs::File, io::Write, path::PathBuf};
 
 use clap::{Parser, Subcommand, ValueEnum};
 use fs::FileSystem;
 use module::module::Module;
+use tracing::Level;
+use tracing_subscriber::FmtSubscriber;
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let subscriber = FmtSubscriber::builder()
+        .with_max_level(Level::TRACE)
+        .finish();
+    tracing::subscriber::set_global_default(subscriber)
+        .expect("setting the default subscriber failed");
+
     let args = Cli::parse();
 
     match args.command {
@@ -21,7 +31,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             let module = Module::try_from(file_system)?;
             let mut output_file = File::create(format!(
                 "{}.json",
-                output_file_name.to_str().expect("should be a valid string")
+                output_file_name
+                    .to_str()
+                    .expect("output file name is not a valid string")
             ))?;
             let output_contents = match output_type {
                 OutputType::Pretty => serde_json::to_string_pretty(&module)?,
