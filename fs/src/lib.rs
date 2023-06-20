@@ -6,6 +6,7 @@ use std::{
 use path_utils::PathUtils;
 
 use thiserror::Error;
+use tracing::{debug, info, instrument, warn};
 
 /// The name of the file that corresponds to the root of a sparse directory.
 pub const UNDERSCORE_FILE_NAME: &str = "_";
@@ -68,10 +69,13 @@ pub enum Entry {
 }
 
 impl Entry {
+    #[instrument]
     pub fn try_from_named(path: PathBuf, name: &str) -> Option<Entry> {
         if let Some(file) = path.get_first_child_named(name) {
+            debug!("Found file with name");
             Some(Entry::File(file))
         } else {
+            debug!("Did not find file with name so will look for directory instead");
             path.join(name)
                 .get_first_child_named(UNDERSCORE_FILE_NAME)
                 .map(|root_file| Entry::Directory {
@@ -102,11 +106,13 @@ impl EntrySet {
     }
     pub fn try_from(base_path: PathBuf) -> Option<Self> {
         if !base_path.exists() {
+            warn!("Base path {:?} did not exist", base_path);
             return None;
         }
         let mut entries: Vec<Entry> = Vec::new();
         if let Some(root_file) = base_path.get_first_child_named(UNDERSCORE_FILE_NAME) {
             // This path has an underscore file, will be mapped as Directory
+            debug!("Found underscore file");
             entries.push(Entry::Directory {
                 root_file,
                 extra_files: base_path
@@ -135,16 +141,21 @@ impl EntrySet {
                 .filter_map(EntrySet::try_from)
                 .flat_map(|a| a.entries.into_iter()),
         );
+        debug!("Create set with {} entries", &entries.len());
         Some(EntrySet { base_path, entries })
     }
+    #[instrument]
     pub fn try_from_with_rendering(base_path: PathBuf) -> Option<Self> {
         if !base_path.exists() {
+            warn!("Base path {:?} did not exist", base_path);
             return None;
         }
         let mut entries: Vec<Entry> = Vec::new();
         if let Some(root_file) = base_path.get_first_child_named(UNDERSCORE_FILE_NAME) {
             // This path has an underscore file, will be mapped as Directory or RenderingDirectory
+            debug!("Found underscore file");
             if base_path.join(RENDERING_DIRECTORY).exists() {
+                debug!("Found rendering directory");
                 entries.push(Entry::RenderingDirectory {
                     root_file,
                     extra_files: base_path
@@ -173,6 +184,7 @@ impl EntrySet {
             }
         } else {
             // Each file in this path should be mapped to a new File
+            debug!("Mapping directory as multiple entries");
             entries.extend(
                 base_path
                     .get_children()
@@ -191,6 +203,7 @@ impl EntrySet {
                 .filter_map(EntrySet::try_from_with_rendering)
                 .flat_map(|a| a.entries.into_iter()),
         );
+        debug!("Create set with {} entries", &entries.len());
         Some(EntrySet { base_path, entries })
     }
 }
@@ -215,6 +228,7 @@ pub enum FileSystemError {
 impl TryFrom<PathBuf> for FileSystem {
     type Error = FileSystemError;
 
+    #[instrument]
     fn try_from(value: PathBuf) -> Result<Self, Self::Error> {
         if !value.exists() || value.is_file() {
             return Err(FileSystemError::InvalidPath(value.into()));
@@ -224,9 +238,11 @@ impl TryFrom<PathBuf> for FileSystem {
             if let Some(types_entries) =
                 EntrySet::try_from_with_rendering(value.join(TYPES_DIRECTORY))
             {
+                info!("Adding types");
                 result = result.with_types(types_entries);
             }
             if let Some(content_entries) = EntrySet::try_from(value.join(CONTENTS_DIRECTORY)) {
+                info!("Adding contents");
                 result = result.with_contents(content_entries);
             }
             Ok(result)

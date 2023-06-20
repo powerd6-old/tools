@@ -4,6 +4,7 @@ use std::{
 };
 
 use pathdiff::diff_paths;
+use tracing::{debug, instrument};
 
 use crate::UNDERSCORE_FILE_NAME;
 
@@ -64,6 +65,7 @@ impl PathUtils for Path {
         }
     }
 
+    #[instrument]
     fn get_id_from_path(&self, base_path: &Path) -> Option<String> {
         diff_paths(self, base_path).map(|p| {
             let mut result = p
@@ -94,6 +96,10 @@ impl PathUtils for Path {
                     "",
                 )
             }
+            debug!(
+                result,
+                "Create id from based on {:?} from {:?}", self, base_path
+            );
             result
         })
     }

@@ -5,6 +5,7 @@ use crate::{
 use std::{collections::HashMap, path::Path};
 
 use serde_json::Value;
+use tracing::{debug, instrument};
 
 pub trait FileSystemData {
     fn try_get_data(&self) -> Result<Value, FileSystemError>;
@@ -18,7 +19,9 @@ impl FileSystemData for Path {
 }
 
 impl FileSystemData for Entry {
+    #[instrument]
     fn try_get_data(&self) -> Result<Value, FileSystemError> {
+        debug!("Getting the data from Entry");
         match self {
             Entry::File(file) => file.try_get_data(),
             Entry::Directory {
