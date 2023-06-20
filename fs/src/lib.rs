@@ -86,20 +86,6 @@ impl Entry {
                 })
         }
     }
-    pub fn get_id_from_path(&self) -> String {
-        match self {
-            Entry::File(f) => f.get_name_without_extension(),
-            Entry::Directory {
-                root_file,
-                extra_files: _,
-            } => root_file.get_name_without_extension(),
-            Entry::RenderingDirectory {
-                root_file,
-                extra_files: _,
-                rendering_files: _,
-            } => root_file.get_name_without_extension(),
-        }
-    }
 }
 
 /// A collection of data objects contained within a directory.
@@ -249,8 +235,8 @@ impl TryFrom<PathBuf> for FileSystem {
         }
     }
 }
-
 pub mod data;
 pub mod file_types;
+pub mod identifiers;
 pub mod path_utils;
 pub mod sorted;

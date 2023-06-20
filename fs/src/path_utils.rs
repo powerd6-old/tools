@@ -1,7 +1,11 @@
 use std::{
     fs::read_dir,
-    path::{Path, PathBuf},
+    path::{Component, Path, PathBuf},
 };
+
+use pathdiff::diff_paths;
+
+use crate::UNDERSCORE_FILE_NAME;
 
 pub trait PathUtils {
     /// A helper function that maps all objects inside a directory into a `PathBuf` iterator
@@ -12,6 +16,8 @@ pub trait PathUtils {
     fn is_file_named(&self, file_name: &str) -> bool;
     /// Gets the file or directory name, excluding any file extension
     fn get_name_without_extension(&self) -> String;
+    /// Returns a String identifier for a path, using the relative path between it and a base path
+    fn get_id_from_path(&self, base_path: &Path) -> Option<String>;
 }
 
 impl PathUtils for Path {
@@ -57,10 +63,45 @@ impl PathUtils for Path {
             None => name.to_string(),
         }
     }
+
+    fn get_id_from_path(&self, base_path: &Path) -> Option<String> {
+        diff_paths(self, base_path).map(|p| {
+            let mut result = p
+                .components()
+                .filter(|c| c.ne(&Component::CurDir))
+                .filter(|c| c.ne(&Component::ParentDir))
+                .filter(|c| {
+                    !c.as_os_str()
+                        .to_str()
+                        .expect("path fragments should be valid strings")
+                        .starts_with(UNDERSCORE_FILE_NAME)
+                })
+                .map(|c| {
+                    c.as_os_str()
+                        .to_str()
+                        .expect("path fragments should be valid strings")
+                })
+                .collect::<Vec<&str>>()
+                .join("_");
+            if let Some(extension) = p.extension() {
+                result = result.replace(
+                    &format!(
+                        ".{}",
+                        extension
+                            .to_str()
+                            .expect("extensions should be valid strings")
+                    ),
+                    "",
+                )
+            }
+            result
+        })
+    }
 }
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
     use pretty_assertions::assert_eq;
     use testdir::testdir;
@@ -130,5 +171,44 @@ mod tests {
 
         assert!(dir.get_first_child_named("a").is_some());
         assert_eq!(dir.get_first_child_named("a").unwrap(), file_a_json);
+    }
+
+    #[test]
+    fn sibling_files_have_correct_nested_id() {
+        let dir: PathBuf = testdir!();
+        let base_path = create_file(&dir.join("a.json"));
+        let sibling_path = create_file(&dir.join("something.json"));
+
+        assert_eq!(
+            sibling_path.get_id_from_path(&base_path).unwrap(),
+            String::from("something")
+        );
+    }
+
+    #[test]
+    fn underscore_files_have_correct_nested_id() {
+        let dir: PathBuf = testdir!();
+        let base_path = create_directory(&dir.join("a"));
+        let nested_path = create_directory(&base_path.join("b"));
+        let sibling_path = create_file(&nested_path.join(format!("{}.json", UNDERSCORE_FILE_NAME)));
+
+        assert_eq!(
+            sibling_path.get_id_from_path(&base_path).unwrap(),
+            String::from("b")
+        );
+    }
+
+    #[test]
+    fn deeply_nested_files_have_correct_nested_id() {
+        let dir: PathBuf = testdir!();
+        let base_path = create_directory(&dir.join("a"));
+        let nested_path = create_directory(&base_path.join("b"));
+        let another_nested_path = create_directory(&nested_path.join("c"));
+        let sibling_path = create_file(&another_nested_path.join("something.yaml"));
+
+        assert_eq!(
+            sibling_path.get_id_from_path(&base_path).unwrap(),
+            String::from("b_c_something")
+        );
     }
 }
