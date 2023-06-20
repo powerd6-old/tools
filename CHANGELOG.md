@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - CLI now logs operations appropriately
+- Fixed `expect` messages to explain what failed instead of what should have happened
 
 ## [0.1.1] - 2023-06-20
 

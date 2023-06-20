@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use fs::{data::FileSystemData, Entry, FileSystem};
 
 use serde::Serialize;
+use tracing::{debug, instrument};
 use url::Url;
 
 const TITLE: &str = "title";
@@ -55,6 +56,7 @@ impl Module {
 impl TryFrom<Entry> for Module {
     type Error = ModuleError;
 
+    #[instrument]
     fn try_from(entry: Entry) -> Result<Self, Self::Error> {
         match entry.try_get_data() {
             Ok(value) => match value.as_object() {
@@ -114,10 +116,13 @@ impl TryFrom<Entry> for Module {
 impl TryFrom<FileSystem> for Module {
     type Error = ModuleError;
 
+    #[instrument]
     fn try_from(fs: FileSystem) -> Result<Self, Self::Error> {
         match TryInto::<Module>::try_into(fs.module) {
             Ok(mut module) => {
+                debug!("Parsed module metadata");
                 if let Some(fs_types) = fs.types {
+                    debug!("Found types in file system");
                     let types_entries = fs_types.entries.clone().into_iter().filter_map(|e| {
                         e.get_id_from_nested_path(&fs_types)
                             .map(Identifier)
@@ -127,6 +132,7 @@ impl TryFrom<FileSystem> for Module {
                     match module.types.as_ref() {
                         None => module = module.with_types(types_entries.collect()),
                         Some(types_from_module) => {
+                            debug!("Merging with types defined in base module");
                             let mut merged_types: HashMap<Identifier, ModuleType> = HashMap::new();
                             for (k, v) in types_from_module {
                                 merged_types.insert(k.clone(), v.clone());
@@ -140,6 +146,7 @@ impl TryFrom<FileSystem> for Module {
                 }
 
                 if let Some(fs_contents) = fs.contents {
+                    debug!("Found contents in file system");
                     let fs_content_data = fs_contents.entries.clone().into_iter().filter_map(|e| {
                         e.get_id_from_nested_path(&fs_contents)
                             .map(Identifier)
@@ -166,6 +173,7 @@ impl TryFrom<FileSystem> for Module {
                     match module.content.as_ref() {
                         None => module = module.with_content(content_entries),
                         Some(content_from_module) => {
+                            debug!("Merging with contents defined in base module");
                             let mut merged_content: HashMap<Identifier, JsonObject> =
                                 HashMap::new();
                             for (k, v) in content_from_module {

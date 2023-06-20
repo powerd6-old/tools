@@ -404,6 +404,7 @@ dependencies = [
  "serde_json",
  "testdir",
  "thiserror",
+ "tracing",
  "url",
 ]
 
