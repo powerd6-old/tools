@@ -54,7 +54,7 @@ map:
     b: 2
             "#,
         )
-        .expect("File was created correctly");
+        .expect("file could not be created");
 
         assert_eq!(
             Yaml.read_file(file).unwrap(),

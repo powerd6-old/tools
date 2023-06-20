@@ -205,11 +205,11 @@ mod tests {
     use testdir::testdir;
 
     fn create_file(path: &PathBuf, contents: &str) -> PathBuf {
-        std::fs::write(path, contents).expect("File was created correctly");
+        std::fs::write(path, contents).expect("file could not be created");
         path.to_path_buf()
     }
     fn create_directory(path: &PathBuf) -> PathBuf {
-        std::fs::create_dir(path).expect("Directory was created correctly");
+        std::fs::create_dir(path).expect("directory could not be created");
         path.to_path_buf()
     }
 
@@ -339,8 +339,8 @@ mod tests {
               }"#,
         );
 
-        let file_system =
-            FileSystem::try_from(dir).expect("FileSystem from tempdir should be valid");
+        let file_system = FileSystem::try_from(dir)
+            .expect("could not create FileSystem from temporary test directory");
 
         let actual = Module::try_from(file_system).unwrap();
         let expected = Module::new(
@@ -372,16 +372,28 @@ mod tests {
         assert_eq!(actual.title, expected.title);
         assert_eq!(actual.description, expected.description);
         assert_eq!(actual.source, expected.source);
-        let sorted_actual_types: BTreeMap<Identifier, ModuleType> =
-            actual.types.expect("Must exist").into_iter().collect();
-        let sorted_expected_types: BTreeMap<Identifier, ModuleType> =
-            expected.types.expect("Must exist").into_iter().collect();
+        let sorted_actual_types: BTreeMap<Identifier, ModuleType> = actual
+            .types
+            .expect("resulting types do not exist")
+            .into_iter()
+            .collect();
+        let sorted_expected_types: BTreeMap<Identifier, ModuleType> = expected
+            .types
+            .expect("expected types do not exist")
+            .into_iter()
+            .collect();
         assert_eq!(sorted_actual_types, sorted_expected_types);
 
-        let sorted_actual_content: BTreeMap<Identifier, JsonObject> =
-            actual.content.expect("Must exist").into_iter().collect();
-        let sorted_expected_content: BTreeMap<Identifier, JsonObject> =
-            expected.content.expect("Must exist").into_iter().collect();
+        let sorted_actual_content: BTreeMap<Identifier, JsonObject> = actual
+            .content
+            .expect("resulting contents do not exist")
+            .into_iter()
+            .collect();
+        let sorted_expected_content: BTreeMap<Identifier, JsonObject> = expected
+            .content
+            .expect("expected contents do not exist")
+            .into_iter()
+            .collect();
         assert_eq!(sorted_actual_content, sorted_expected_content);
     }
 }
