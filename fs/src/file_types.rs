@@ -1,9 +1,11 @@
 use std::{ffi::OsStr, path::Path};
 
 use serde_json::Value;
+use tracing::instrument;
 
 use crate::FileSystemError;
 
+#[derive(Debug)]
 pub enum FileType {
     JSON,
     YAML,
@@ -13,6 +15,7 @@ pub enum FileType {
 }
 
 impl FileType {
+    #[instrument]
     pub fn try_read_file(&self, path: &Path) -> Result<Value, FileSystemError> {
         match self {
             FileType::JSON => Json.read_file(path),

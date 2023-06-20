@@ -4,6 +4,7 @@ use std::{
 };
 
 use pathdiff::diff_paths;
+use tracing::{debug, instrument};
 
 use crate::UNDERSCORE_FILE_NAME;
 
@@ -40,22 +41,20 @@ impl PathUtils for Path {
 
     fn is_file_named(&self, file_name: &str) -> bool {
         self.file_name()
-            .map(|n| String::from(n.to_str().expect("File names must exist")))
+            .map(|n| String::from(n.to_str().expect("File name is not a valid string")))
             .map_or(false, |x| x.starts_with(file_name))
     }
 
     fn get_name_without_extension(&self) -> String {
         let name = self
             .file_name()
-            .expect("Files and Directories should have a name")
+            .expect("Path does not have a name")
             .to_str()
-            .expect("Name should be valid string");
+            .expect("Path name is not a valid string");
         match self.extension() {
             Some(extension) => name
                 .replace(
-                    extension
-                        .to_str()
-                        .expect("Extension should be a valid string"),
+                    extension.to_str().expect("Extension is not a valid string"),
                     "",
                 )
                 .trim_end_matches('.')
@@ -64,23 +63,19 @@ impl PathUtils for Path {
         }
     }
 
+    #[instrument]
     fn get_id_from_path(&self, base_path: &Path) -> Option<String> {
         diff_paths(self, base_path).map(|p| {
             let mut result = p
                 .components()
                 .filter(|c| c.ne(&Component::CurDir))
                 .filter(|c| c.ne(&Component::ParentDir))
-                .filter(|c| {
-                    !c.as_os_str()
-                        .to_str()
-                        .expect("path fragments should be valid strings")
-                        .starts_with(UNDERSCORE_FILE_NAME)
-                })
                 .map(|c| {
                     c.as_os_str()
                         .to_str()
-                        .expect("path fragments should be valid strings")
+                        .expect("Path fragments is not a valid strings")
                 })
+                .filter(|s| !s.starts_with(UNDERSCORE_FILE_NAME))
                 .collect::<Vec<&str>>()
                 .join("_");
             if let Some(extension) = p.extension() {
@@ -89,11 +84,15 @@ impl PathUtils for Path {
                         ".{}",
                         extension
                             .to_str()
-                            .expect("extensions should be valid strings")
+                            .expect("Extensions is not a valid strings")
                     ),
                     "",
                 )
             }
+            debug!(
+                result,
+                "Create id from based on {:?} from {:?}", self, base_path
+            );
             result
         })
     }
@@ -107,11 +106,11 @@ mod tests {
     use testdir::testdir;
 
     fn create_file(path: &PathBuf) -> PathBuf {
-        std::fs::write(path, "").expect("File was created correctly");
+        std::fs::write(path, "").expect("File could not be created");
         path.to_path_buf()
     }
     fn create_directory(path: &PathBuf) -> PathBuf {
-        std::fs::create_dir(path).expect("Directory was created correctly");
+        std::fs::create_dir(path).expect("Directory could not be created");
         path.to_path_buf()
     }
 

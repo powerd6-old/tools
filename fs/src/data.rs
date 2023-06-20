@@ -5,6 +5,7 @@ use crate::{
 use std::{collections::HashMap, path::Path};
 
 use serde_json::Value;
+use tracing::{debug, instrument};
 
 pub trait FileSystemData {
     fn try_get_data(&self) -> Result<Value, FileSystemError>;
@@ -18,7 +19,9 @@ impl FileSystemData for Path {
 }
 
 impl FileSystemData for Entry {
+    #[instrument]
     fn try_get_data(&self) -> Result<Value, FileSystemError> {
+        debug!("Getting the data from Entry");
         match self {
             Entry::File(file) => file.try_get_data(),
             Entry::Directory {
@@ -79,7 +82,7 @@ impl FileSystemData for Entry {
                         root_data_map.insert(
                             RENDERING_DIRECTORY.to_string(),
                             serde_json::to_value(rendering_templates_data)
-                                .expect("Map should be a valid Value"),
+                                .expect("Rendering template data was not a valid json value"),
                         );
                         Ok(root_data)
                     }
@@ -103,11 +106,11 @@ mod tests {
     use testdir::testdir;
 
     fn create_file(path: &PathBuf, contents: &str) -> PathBuf {
-        std::fs::write(path, contents).expect("File was created correctly");
+        std::fs::write(path, contents).expect("File could not be created");
         path.to_path_buf()
     }
     fn create_directory(path: &PathBuf) -> PathBuf {
-        std::fs::create_dir(path).expect("Directory was created correctly");
+        std::fs::create_dir(path).expect("Directory could not be created");
         path.to_path_buf()
     }
 

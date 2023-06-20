@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use fs::{data::FileSystemData, Entry, FileSystem};
 
 use serde::Serialize;
+use tracing::{debug, instrument};
 use url::Url;
 
 const TITLE: &str = "title";
@@ -55,6 +56,7 @@ impl Module {
 impl TryFrom<Entry> for Module {
     type Error = ModuleError;
 
+    #[instrument]
     fn try_from(entry: Entry) -> Result<Self, Self::Error> {
         match entry.try_get_data() {
             Ok(value) => match value.as_object() {
@@ -114,10 +116,13 @@ impl TryFrom<Entry> for Module {
 impl TryFrom<FileSystem> for Module {
     type Error = ModuleError;
 
+    #[instrument]
     fn try_from(fs: FileSystem) -> Result<Self, Self::Error> {
         match TryInto::<Module>::try_into(fs.module) {
             Ok(mut module) => {
+                debug!("Parsed module metadata");
                 if let Some(fs_types) = fs.types {
+                    debug!("Found types in file system");
                     let types_entries = fs_types.entries.clone().into_iter().filter_map(|e| {
                         e.get_id_from_nested_path(&fs_types)
                             .map(Identifier)
@@ -127,6 +132,7 @@ impl TryFrom<FileSystem> for Module {
                     match module.types.as_ref() {
                         None => module = module.with_types(types_entries.collect()),
                         Some(types_from_module) => {
+                            debug!("Merging with types defined in base module");
                             let mut merged_types: HashMap<Identifier, ModuleType> = HashMap::new();
                             for (k, v) in types_from_module {
                                 merged_types.insert(k.clone(), v.clone());
@@ -140,6 +146,7 @@ impl TryFrom<FileSystem> for Module {
                 }
 
                 if let Some(fs_contents) = fs.contents {
+                    debug!("Found contents in file system");
                     let fs_content_data = fs_contents.entries.clone().into_iter().filter_map(|e| {
                         e.get_id_from_nested_path(&fs_contents)
                             .map(Identifier)
@@ -166,6 +173,7 @@ impl TryFrom<FileSystem> for Module {
                     match module.content.as_ref() {
                         None => module = module.with_content(content_entries),
                         Some(content_from_module) => {
+                            debug!("Merging with contents defined in base module");
                             let mut merged_content: HashMap<Identifier, JsonObject> =
                                 HashMap::new();
                             for (k, v) in content_from_module {
@@ -197,11 +205,11 @@ mod tests {
     use testdir::testdir;
 
     fn create_file(path: &PathBuf, contents: &str) -> PathBuf {
-        std::fs::write(path, contents).expect("File was created correctly");
+        std::fs::write(path, contents).expect("File could not be created");
         path.to_path_buf()
     }
     fn create_directory(path: &PathBuf) -> PathBuf {
-        std::fs::create_dir(path).expect("Directory was created correctly");
+        std::fs::create_dir(path).expect("Directory could not be created");
         path.to_path_buf()
     }
 
@@ -331,8 +339,8 @@ mod tests {
               }"#,
         );
 
-        let file_system =
-            FileSystem::try_from(dir).expect("FileSystem from tempdir should be valid");
+        let file_system = FileSystem::try_from(dir)
+            .expect("Could not create FileSystem from temporary test directory");
 
         let actual = Module::try_from(file_system).unwrap();
         let expected = Module::new(
@@ -364,16 +372,28 @@ mod tests {
         assert_eq!(actual.title, expected.title);
         assert_eq!(actual.description, expected.description);
         assert_eq!(actual.source, expected.source);
-        let sorted_actual_types: BTreeMap<Identifier, ModuleType> =
-            actual.types.expect("Must exist").into_iter().collect();
-        let sorted_expected_types: BTreeMap<Identifier, ModuleType> =
-            expected.types.expect("Must exist").into_iter().collect();
+        let sorted_actual_types: BTreeMap<Identifier, ModuleType> = actual
+            .types
+            .expect("Resulting types do not exist")
+            .into_iter()
+            .collect();
+        let sorted_expected_types: BTreeMap<Identifier, ModuleType> = expected
+            .types
+            .expect("Expected types do not exist")
+            .into_iter()
+            .collect();
         assert_eq!(sorted_actual_types, sorted_expected_types);
 
-        let sorted_actual_content: BTreeMap<Identifier, JsonObject> =
-            actual.content.expect("Must exist").into_iter().collect();
-        let sorted_expected_content: BTreeMap<Identifier, JsonObject> =
-            expected.content.expect("Must exist").into_iter().collect();
+        let sorted_actual_content: BTreeMap<Identifier, JsonObject> = actual
+            .content
+            .expect("Resulting contents do not exist")
+            .into_iter()
+            .collect();
+        let sorted_expected_content: BTreeMap<Identifier, JsonObject> = expected
+            .content
+            .expect("Expected contents do not exist")
+            .into_iter()
+            .collect();
         assert_eq!(sorted_actual_content, sorted_expected_content);
     }
 }

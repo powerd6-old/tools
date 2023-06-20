@@ -111,7 +111,7 @@ mod tests {
     use testdir::testdir;
 
     fn create_file(path: &PathBuf, contents: &str) -> PathBuf {
-        std::fs::write(path, contents).expect("File was created correctly");
+        std::fs::write(path, contents).expect("File could not be created");
         path.to_path_buf()
     }
 

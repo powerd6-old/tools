@@ -8,12 +8,12 @@ use fs::{
 };
 
 fn create_file(path: &PathBuf) -> PathBuf {
-    std::fs::write(path, "").expect("File was created correctly");
+    std::fs::write(path, "").expect("File could not be created");
     path.to_path_buf()
 }
 
 fn create_directory(path: &PathBuf) -> PathBuf {
-    std::fs::create_dir(path).expect("Directory was created correctly");
+    std::fs::create_dir(path).expect("Directory could not be created");
     path.to_path_buf()
 }
 
