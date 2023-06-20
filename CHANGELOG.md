@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Renamed binary from `tools` to `powerd6_cli`
 
+### Fixed
+
+- Identifiers generated for files now use their relative paths to create the correct values
+
 ## [0.1.0] - 2023-06-19
 
 ### Added
