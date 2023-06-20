@@ -9,7 +9,7 @@ use std::{convert::TryFrom, error::Error, ffi::OsString, fs::File, io::Write, pa
 use clap::{Parser, Subcommand, ValueEnum};
 use fs::FileSystem;
 use module::module::Module;
-use tracing::Level;
+use tracing::{debug, info, Level};
 use tracing_subscriber::FmtSubscriber;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -27,19 +27,24 @@ fn main() -> Result<(), Box<dyn Error>> {
             output_file_name,
             output_type,
         } => {
+            info!("Starting to build the module");
             let file_system = FileSystem::try_from(source)?;
+            debug!("Source directory was parsed correctly");
             let module = Module::try_from(file_system)?;
+            info!("Module was created from source directory");
             let mut output_file = File::create(format!(
                 "{}.json",
                 output_file_name
                     .to_str()
                     .expect("output file name is not a valid string")
             ))?;
+            debug!("About to write module as {:?}", output_type);
             let output_contents = match output_type {
                 OutputType::Pretty => serde_json::to_string_pretty(&module)?,
                 OutputType::Minimized => serde_json::to_string(&module)?,
             };
             write!(output_file, "{}", output_contents)?;
+            info!("Done!");
             Ok(())
         }
     }
