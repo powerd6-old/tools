@@ -9,12 +9,12 @@ use std::{convert::TryFrom, error::Error, ffi::OsString, fs::File, io::Write, pa
 use clap::{Parser, Subcommand, ValueEnum};
 use fs::FileSystem;
 use module::module::Module;
-use tracing::{debug, info, Level};
-use tracing_subscriber::FmtSubscriber;
+use tracing::{debug, info};
+use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let subscriber = FmtSubscriber::builder()
-        .with_max_level(Level::INFO)
+        .with_env_filter(EnvFilter::from_default_env())
         .finish();
     tracing::subscriber::set_global_default(subscriber)
         .expect("setting the default subscriber failed");
