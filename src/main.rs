@@ -18,7 +18,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_env_filter(EnvFilter::from_default_env())
         .finish();
     tracing::subscriber::set_global_default(subscriber)
-        .expect("setting the default subscriber failed");
+        .expect("Setting the default subscriber failed");
 
     let args = Cli::parse();
 

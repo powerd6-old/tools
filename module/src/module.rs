@@ -205,11 +205,11 @@ mod tests {
     use testdir::testdir;
 
     fn create_file(path: &PathBuf, contents: &str) -> PathBuf {
-        std::fs::write(path, contents).expect("file could not be created");
+        std::fs::write(path, contents).expect("File could not be created");
         path.to_path_buf()
     }
     fn create_directory(path: &PathBuf) -> PathBuf {
-        std::fs::create_dir(path).expect("directory could not be created");
+        std::fs::create_dir(path).expect("Directory could not be created");
         path.to_path_buf()
     }
 
@@ -340,7 +340,7 @@ mod tests {
         );
 
         let file_system = FileSystem::try_from(dir)
-            .expect("could not create FileSystem from temporary test directory");
+            .expect("Could not create FileSystem from temporary test directory");
 
         let actual = Module::try_from(file_system).unwrap();
         let expected = Module::new(
@@ -374,24 +374,24 @@ mod tests {
         assert_eq!(actual.source, expected.source);
         let sorted_actual_types: BTreeMap<Identifier, ModuleType> = actual
             .types
-            .expect("resulting types do not exist")
+            .expect("Resulting types do not exist")
             .into_iter()
             .collect();
         let sorted_expected_types: BTreeMap<Identifier, ModuleType> = expected
             .types
-            .expect("expected types do not exist")
+            .expect("Expected types do not exist")
             .into_iter()
             .collect();
         assert_eq!(sorted_actual_types, sorted_expected_types);
 
         let sorted_actual_content: BTreeMap<Identifier, JsonObject> = actual
             .content
-            .expect("resulting contents do not exist")
+            .expect("Resulting contents do not exist")
             .into_iter()
             .collect();
         let sorted_expected_content: BTreeMap<Identifier, JsonObject> = expected
             .content
-            .expect("expected contents do not exist")
+            .expect("Expected contents do not exist")
             .into_iter()
             .collect();
         assert_eq!(sorted_actual_content, sorted_expected_content);

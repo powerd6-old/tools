@@ -41,20 +41,20 @@ impl PathUtils for Path {
 
     fn is_file_named(&self, file_name: &str) -> bool {
         self.file_name()
-            .map(|n| String::from(n.to_str().expect("file name is not a valid string")))
+            .map(|n| String::from(n.to_str().expect("File name is not a valid string")))
             .map_or(false, |x| x.starts_with(file_name))
     }
 
     fn get_name_without_extension(&self) -> String {
         let name = self
             .file_name()
-            .expect("path does not have a name")
+            .expect("Path does not have a name")
             .to_str()
-            .expect("path name is not a valid string");
+            .expect("Path name is not a valid string");
         match self.extension() {
             Some(extension) => name
                 .replace(
-                    extension.to_str().expect("extension is not a valid string"),
+                    extension.to_str().expect("Extension is not a valid string"),
                     "",
                 )
                 .trim_end_matches('.')
@@ -73,7 +73,7 @@ impl PathUtils for Path {
                 .map(|c| {
                     c.as_os_str()
                         .to_str()
-                        .expect("path fragments is not a valid strings")
+                        .expect("Path fragments is not a valid strings")
                 })
                 .filter(|s| !s.starts_with(UNDERSCORE_FILE_NAME))
                 .collect::<Vec<&str>>()
@@ -84,7 +84,7 @@ impl PathUtils for Path {
                         ".{}",
                         extension
                             .to_str()
-                            .expect("extensions is not a valid strings")
+                            .expect("Extensions is not a valid strings")
                     ),
                     "",
                 )
@@ -106,11 +106,11 @@ mod tests {
     use testdir::testdir;
 
     fn create_file(path: &PathBuf) -> PathBuf {
-        std::fs::write(path, "").expect("file could not be created");
+        std::fs::write(path, "").expect("File could not be created");
         path.to_path_buf()
     }
     fn create_directory(path: &PathBuf) -> PathBuf {
-        std::fs::create_dir(path).expect("directory could not be created");
+        std::fs::create_dir(path).expect("Directory could not be created");
         path.to_path_buf()
     }
 
