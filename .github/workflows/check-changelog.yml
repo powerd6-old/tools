@@ -1,0 +1,13 @@
+name: Check changelog
+on:
+  pull_request:
+    types:
+      - "opened"
+      - "reopened"
+      - "synchronize"
+      - "labeled"
+      - "unlabeled"
+jobs:
+  check-changelog:
+    uses: powerd6/.github/.github/workflows/check-changelog.yml@main
+    secrets: inherit
