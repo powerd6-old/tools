@@ -20,6 +20,19 @@ jobs:
           pull-requests: write
         steps:
             - uses: actions/checkout@v3.3.0
+            - uses: actions/cache@v3
+              with:
+                path: |
+                  ~/.cargo/bin/
+                  ~/.cargo/registry/index/
+                  ~/.cargo/registry/cache/
+                  ~/.cargo/git/db/
+                key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+            - uses: actions/cache@v3
+              with:
+                path: |
+                  target/
+                key: ${{ runner.os }}-cargo-target-${{ hashFiles('**/Cargo.lock') }}
             - name: Update CHANGELOG.md
               run: |-
                 today="$(date '+%Y-%m-%d')"
@@ -27,6 +40,9 @@ jobs:
             - name: Update Cargo packages
               run: |-
                 sed -i -e "s/version = \"[0-9]*.[0-9]*.[0-9]*\"$/version = \"${{ inputs.version }}\"/" 'Cargo.toml'
+            - name: Rebuild packages
+              run: |-
+                cargo build --workspace
             - name: Create Pull Request
               uses: peter-evans/create-pull-request@v5
               with:
