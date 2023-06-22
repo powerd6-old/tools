@@ -53,6 +53,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 /// A CLI to help build powerd6 modules
 #[derive(Debug, Parser)]
+#[command(name = "powerd6_cli", version, about)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,

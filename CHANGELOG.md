@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- CLI now has a `--version` option
+
 ### Fixed
 
 - When releasing, rebuild before opening a PR, to update `Cargo.lock`
+- `get_first_child_named` now returns the first child, alphabetically
 
 
 ## [0.1.3] - 2023-06-21
