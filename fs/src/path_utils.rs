@@ -23,12 +23,14 @@ pub trait PathUtils {
 
 impl PathUtils for Path {
     fn get_children(&self) -> Vec<PathBuf> {
-        read_dir(self)
+        let mut result: Vec<PathBuf> = read_dir(self)
             .into_iter()
             .flatten()
             .filter_map(|e| e.ok())
             .map(|e| e.path())
-            .collect()
+            .collect();
+        result.sort();
+        result
     }
 
     fn get_first_child_named(&self, name: &str) -> Option<PathBuf> {
