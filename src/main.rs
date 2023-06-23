@@ -4,7 +4,14 @@ extern crate module;
 extern crate tracing;
 extern crate tracing_subscriber;
 
-use std::{convert::TryFrom, error::Error, ffi::OsString, fs::File, io::Write, path::PathBuf};
+use std::{
+    convert::TryFrom,
+    error::Error,
+    ffi::OsString,
+    fs::File,
+    io::{BufReader, Write},
+    path::PathBuf,
+};
 
 use clap::{Parser, Subcommand, ValueEnum};
 use fs::FileSystem;
@@ -55,6 +62,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         } => {
             info!("Starting to render the module");
             // TODO: Load Module from file
+            let file = File::open(source)?;
+            let reader = BufReader::new(file);
+            let module: Module = serde_json::from_reader(reader)?;
+            debug!("Loaded module from file correctly");
             // TODO: check all types have the chosen template format
             // TODO: For each piece of content, render it with the correct template
             // TODO: Save all rendered contents into output
