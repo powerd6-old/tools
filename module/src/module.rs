@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 use fs::{data::FileSystemData, Entry, FileSystem};
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tracing::{debug, instrument};
 use url::Url;
 
@@ -17,7 +17,7 @@ const CONTENTS: &str = "contents";
 
 /// A document that contains information detailing and explaining rules and/or content, meant to be used for rendering by powerd6.
 /// This object does not perform validation into the values of each field and merely serves as a convenient way to manipulate already-built modules in rust.
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Module {
     /// The title of the module.
     pub title: String,
