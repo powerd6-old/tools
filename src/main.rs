@@ -48,6 +48,19 @@ fn main() -> Result<(), Box<dyn Error>> {
             info!("Done!");
             Ok(())
         }
+        Commands::Render {
+            source,
+            output_file_name,
+            format,
+        } => {
+            info!("Starting to render the module");
+            // TODO: Load Module from file
+            // TODO: check all types have the chosen template format
+            // TODO: For each piece of content, render it with the correct template
+            // TODO: Save all rendered contents into output
+            info!("Done!");
+            Ok(())
+        }
     }
 }
 
@@ -78,6 +91,19 @@ enum Commands {
             value_enum
         )]
         output_type: OutputType,
+    },
+    /// Renders a module with a specific format
+    #[command(arg_required_else_help = true)]
+    Render {
+        /// The path to the module to be rendered
+        #[arg(required = true)]
+        source: PathBuf,
+        /// The name of the output file, without extension
+        #[arg(short = 'o', long = "output", default_value = "module")]
+        output_file_name: OsString,
+        /// The format that should be rendered
+        #[arg(required = true)]
+        format: String,
     },
 }
 
