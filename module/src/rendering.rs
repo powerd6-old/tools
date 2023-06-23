@@ -65,8 +65,8 @@ mod tests {
     }
 
     #[test]
-    fn renders_templates_with_data() {
-        let rendering_format = RenderingFormat(r#"Name: {{self.name}}"#.to_string());
+    fn renders_templates_with_data_from_content() {
+        let rendering_format = RenderingFormat("Name: {{self.name}}".to_string());
         let content = JsonObject::from([("name".to_string(), Value::String("john".to_string()))]);
         let module = Module::new(
             "title".to_string(),
@@ -77,6 +77,22 @@ mod tests {
         assert_eq!(
             rendering_format.render(&content, &module).unwrap(),
             "Name: john"
+        );
+    }
+
+    #[test]
+    fn renders_templates_with_data_from_module() {
+        let rendering_format = RenderingFormat("Module title: {{module.title}}".to_string());
+        let content = JsonObject::new();
+        let module = Module::new(
+            "title".to_string(),
+            "description".to_string(),
+            Url::parse("https://my.source").unwrap(),
+        );
+
+        assert_eq!(
+            rendering_format.render(&content, &module).unwrap(),
+            "Module title: title"
         );
     }
 }
