@@ -1,3 +1,6 @@
+use crate::rendering::RenderingContent;
+use crate::rendering::RenderingFormat;
+
 use super::DESCRIPTION;
 
 use super::ModuleError;
@@ -42,26 +45,6 @@ impl ModuleType {
     pub fn with_rendering(mut self, rendering: HashMap<RenderingFormat, RenderingContent>) -> Self {
         self.rendering = Some(rendering);
         self
-    }
-}
-
-/// The template to be used for the specified format.
-#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
-pub struct RenderingContent(String);
-
-impl From<String> for RenderingContent {
-    fn from(value: String) -> Self {
-        RenderingContent(value)
-    }
-}
-
-/// The file format that the template corresponds to.
-#[derive(Debug, Eq, Hash, PartialEq, Clone, Serialize, Deserialize)]
-pub struct RenderingFormat(String);
-
-impl From<String> for RenderingFormat {
-    fn from(value: String) -> Self {
-        RenderingFormat(value)
     }
 }
 

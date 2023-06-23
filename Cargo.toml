@@ -25,6 +25,7 @@ edition = "2021"
 [workspace.dependencies]
 clap = { version = "4.3.4", features = ["derive"] }
 fs = { path = "./fs" }
+handlebars = "4.3.7"
 module = { path = "./module" }
 pathdiff = "0.2.1"
 pretty_assertions = "1.3.0"

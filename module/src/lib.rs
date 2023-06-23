@@ -39,3 +39,4 @@ pub enum ModuleError {
 
 pub mod module;
 pub mod module_type;
+pub mod rendering;
