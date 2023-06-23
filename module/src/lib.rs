@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 use std::error::Error;
+use std::fmt::Display;
 use thiserror::Error;
 
 const DESCRIPTION: &str = "description";
@@ -13,6 +14,12 @@ pub struct Identifier(String);
 impl From<String> for Identifier {
     fn from(value: String) -> Self {
         Identifier(value)
+    }
+}
+
+impl Display for Identifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 
