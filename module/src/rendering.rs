@@ -1,7 +1,6 @@
-use std::{collections::HashMap, error::Error};
+use std::error::Error;
 
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 use crate::{module::Module, JsonObject};
 
@@ -25,9 +24,13 @@ impl From<String> for RenderingFormat {
     }
 }
 
-impl RenderingFormat {
+mod helpers;
+
+impl RenderingContent {
     pub fn render(&self, content: &JsonObject, module: &Module) -> Result<String, Box<dyn Error>> {
         let mut handlebars = handlebars::Handlebars::new();
+        handlebars = helpers::setup_helpers(handlebars);
+
         handlebars.register_template_string("template", self.0.clone())?;
 
         let render_data = JsonObject::from([
@@ -50,7 +53,7 @@ mod tests {
 
     #[test]
     fn renders_non_templates() {
-        let rendering_format = RenderingFormat("Hello!".to_string());
+        let rendering_content = RenderingContent("Hello!".to_string());
         let content = JsonObject::new();
         let module = Module::new(
             "title".to_string(),
@@ -59,14 +62,14 @@ mod tests {
         );
 
         assert_eq!(
-            rendering_format.render(&content, &module).unwrap(),
+            rendering_content.render(&content, &module).unwrap(),
             "Hello!"
         );
     }
 
     #[test]
     fn renders_templates_with_data_from_content() {
-        let rendering_format = RenderingFormat("Name: {{self.name}}".to_string());
+        let rendering_content = RenderingContent("Name: {{self.name}}".to_string());
         let content = JsonObject::from([("name".to_string(), Value::String("john".to_string()))]);
         let module = Module::new(
             "title".to_string(),
@@ -75,14 +78,14 @@ mod tests {
         );
 
         assert_eq!(
-            rendering_format.render(&content, &module).unwrap(),
+            rendering_content.render(&content, &module).unwrap(),
             "Name: john"
         );
     }
 
     #[test]
     fn renders_templates_with_data_from_module() {
-        let rendering_format = RenderingFormat("Module title: {{module.title}}".to_string());
+        let rendering_content = RenderingContent("Module title: {{module.title}}".to_string());
         let content = JsonObject::new();
         let module = Module::new(
             "title".to_string(),
@@ -91,7 +94,7 @@ mod tests {
         );
 
         assert_eq!(
-            rendering_format.render(&content, &module).unwrap(),
+            rendering_content.render(&content, &module).unwrap(),
             "Module title: title"
         );
     }
