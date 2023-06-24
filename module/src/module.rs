@@ -2,11 +2,11 @@ use crate::{module_type::ModuleType, JsonObject, ModuleError, DESCRIPTION};
 
 use super::Identifier;
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use fs::{data::FileSystemData, Entry, FileSystem};
 
-use serde::Serialize;
+use serde::{ser, Deserialize, Serialize, Serializer};
 use tracing::{debug, instrument};
 use url::Url;
 
@@ -17,7 +17,7 @@ const CONTENTS: &str = "contents";
 
 /// A document that contains information detailing and explaining rules and/or content, meant to be used for rendering by powerd6.
 /// This object does not perform validation into the values of each field and merely serves as a convenient way to manipulate already-built modules in rust.
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Module {
     /// The title of the module.
     pub title: String,
@@ -27,10 +27,10 @@ pub struct Module {
     pub source: Url,
     /// A collection of types that are defined in this module.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub types: Option<HashMap<Identifier, ModuleType>>,
+    pub types: Option<BTreeMap<Identifier, ModuleType>>,
     /// A collection of contents defined in this module, the keys of the map are the unique identifiers of the content pieces.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub content: Option<HashMap<Identifier, JsonObject>>,
+    pub content: Option<BTreeMap<Identifier, JsonObject>>,
 }
 
 impl Module {
@@ -43,11 +43,11 @@ impl Module {
             content: None,
         }
     }
-    pub fn with_types(mut self, types: HashMap<Identifier, ModuleType>) -> Self {
+    pub fn with_types(mut self, types: BTreeMap<Identifier, ModuleType>) -> Self {
         self.types = Some(types);
         self
     }
-    pub fn with_content(mut self, content: HashMap<Identifier, JsonObject>) -> Self {
+    pub fn with_content(mut self, content: BTreeMap<Identifier, JsonObject>) -> Self {
         self.content = Some(content);
         self
     }
@@ -70,8 +70,8 @@ impl TryFrom<Entry> for Module {
                             let mut result =
                                 Module::new(title.to_string(), description.to_string(), source_url);
                             if let Some(types) = data.get(TYPES).and_then(|t| t.as_object()) {
-                                let mut types_result: HashMap<Identifier, ModuleType> =
-                                    HashMap::new();
+                                let mut types_result: BTreeMap<Identifier, ModuleType> =
+                                    BTreeMap::new();
                                 for (key, value) in types {
                                     match serde_json::from_value(value.clone()) {
                                         Ok(type_value) => {
@@ -85,8 +85,8 @@ impl TryFrom<Entry> for Module {
                                 result = result.with_types(types_result);
                             }
                             if let Some(contents) = data.get(CONTENTS).and_then(|t| t.as_object()) {
-                                let mut contents_result: HashMap<Identifier, JsonObject> =
-                                    HashMap::new();
+                                let mut contents_result: BTreeMap<Identifier, JsonObject> =
+                                    BTreeMap::new();
                                 for (key, value) in contents
                                     .into_iter()
                                     .filter_map(|(k, v)| Some(k).zip(v.as_object()))
@@ -133,7 +133,8 @@ impl TryFrom<FileSystem> for Module {
                         None => module = module.with_types(types_entries.collect()),
                         Some(types_from_module) => {
                             debug!("Merging with types defined in base module");
-                            let mut merged_types: HashMap<Identifier, ModuleType> = HashMap::new();
+                            let mut merged_types: BTreeMap<Identifier, ModuleType> =
+                                BTreeMap::new();
                             for (k, v) in types_from_module {
                                 merged_types.insert(k.clone(), v.clone());
                             }
@@ -153,7 +154,7 @@ impl TryFrom<FileSystem> for Module {
                             .zip(e.try_get_data().ok())
                     });
 
-                    let mut content_entries: HashMap<Identifier, JsonObject> = HashMap::new();
+                    let mut content_entries: BTreeMap<Identifier, JsonObject> = BTreeMap::new();
                     for (identifier, data) in fs_content_data {
                         match data.as_object() {
                             Some(fs_content_data_map) => {
@@ -174,8 +175,8 @@ impl TryFrom<FileSystem> for Module {
                         None => module = module.with_content(content_entries),
                         Some(content_from_module) => {
                             debug!("Merging with contents defined in base module");
-                            let mut merged_content: HashMap<Identifier, JsonObject> =
-                                HashMap::new();
+                            let mut merged_content: BTreeMap<Identifier, JsonObject> =
+                                BTreeMap::new();
                             for (k, v) in content_from_module {
                                 merged_content.insert(k.clone(), v.clone());
                             }
@@ -260,7 +261,7 @@ mod tests {
                 "description".to_string(),
                 Url::parse("https://my.source").unwrap()
             )
-            .with_types(HashMap::from([(
+            .with_types(BTreeMap::from([(
                 Identifier("a".to_string()),
                 ModuleType::new("my description".to_string())
             )]))
@@ -291,7 +292,7 @@ mod tests {
                 "description".to_string(),
                 Url::parse("https://my.source").unwrap()
             )
-            .with_content(HashMap::from([(
+            .with_content(BTreeMap::from([(
                 Identifier("a".to_string()),
                 JsonObject::from([("key".to_string(), Value::String("value".to_string()))])
             )]))
@@ -348,7 +349,7 @@ mod tests {
             "description".to_string(),
             Url::parse("https://my.source").unwrap(),
         )
-        .with_types(HashMap::from([
+        .with_types(BTreeMap::from([
             (
                 Identifier("a".to_string()),
                 ModuleType::new("my description".to_string()),
@@ -358,7 +359,7 @@ mod tests {
                 ModuleType::new("my other description".to_string()),
             ),
         ]))
-        .with_content(HashMap::from([
+        .with_content(BTreeMap::from([
             (
                 Identifier("a".to_string()),
                 JsonObject::from([("key".to_string(), Value::String("value".to_string()))]),
@@ -372,28 +373,7 @@ mod tests {
         assert_eq!(actual.title, expected.title);
         assert_eq!(actual.description, expected.description);
         assert_eq!(actual.source, expected.source);
-        let sorted_actual_types: BTreeMap<Identifier, ModuleType> = actual
-            .types
-            .expect("Resulting types do not exist")
-            .into_iter()
-            .collect();
-        let sorted_expected_types: BTreeMap<Identifier, ModuleType> = expected
-            .types
-            .expect("Expected types do not exist")
-            .into_iter()
-            .collect();
-        assert_eq!(sorted_actual_types, sorted_expected_types);
-
-        let sorted_actual_content: BTreeMap<Identifier, JsonObject> = actual
-            .content
-            .expect("Resulting contents do not exist")
-            .into_iter()
-            .collect();
-        let sorted_expected_content: BTreeMap<Identifier, JsonObject> = expected
-            .content
-            .expect("Expected contents do not exist")
-            .into_iter()
-            .collect();
-        assert_eq!(sorted_actual_content, sorted_expected_content);
+        assert_eq!(actual.types, expected.types);
+        assert_eq!(actual.content, expected.content);
     }
 }

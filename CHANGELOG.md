@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - CLI now has a `--version` option
 
+### Changed
+
+- Contents and Types in modules are now sorted alphabetically
+
 ### Fixed
 
 - When releasing, rebuild before opening a PR, to update `Cargo.lock`
