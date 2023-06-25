@@ -6,7 +6,7 @@ use std::collections::{BTreeMap, HashMap};
 
 use fs::{data::FileSystemData, Entry, FileSystem};
 
-use serde::{ser, Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use tracing::{debug, instrument};
 use url::Url;
 
