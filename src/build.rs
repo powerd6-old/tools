@@ -47,9 +47,9 @@ pub fn run(
 ) -> Result<(), Box<dyn Error>> {
     info!("Starting to build the module");
     let file_system = FileSystem::try_from(source)?;
-    debug!("Source directory was parsed correctly");
+    debug!("Source directory was parsed correctly: {:#?}", file_system);
     let module = Module::try_from(file_system)?;
-    info!("Module was created from source directory");
+    info!("Module was created from source directory: {:#?}", module);
     let mut output_file = File::create(format!(
         "{}.json",
         output_file_name

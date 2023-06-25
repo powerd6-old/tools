@@ -55,7 +55,7 @@ pub fn run(
     let file = File::open(source)?;
     let reader = BufReader::new(file);
     let module: Module = serde_json::from_reader(reader)?;
-    debug!("Loaded module from file correctly");
+    debug!("Loaded module from file correctly: {:#?}", module);
     let rendering_format = RenderingFormat::from(format.clone());
     let rendering_templates = get_rendering_templates(&module, &rendering_format)?;
     debug!(
