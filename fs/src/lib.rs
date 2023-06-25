@@ -3,8 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use path_utils::PathUtils;
-
+use ::path_utils::{children::ChildrenPaths, name::NamePaths, PathUtils};
 use thiserror::Error;
 use tracing::{debug, info, instrument, warn};
 
@@ -85,7 +84,7 @@ impl Entry {
                         .get_children()
                         .into_iter()
                         .filter(|e| e.is_file())
-                        .filter(|f| !f.is_file_named(UNDERSCORE_FILE_NAME))
+                        .filter(|f| !f.is_named(UNDERSCORE_FILE_NAME))
                         .collect(),
                 })
         }
@@ -119,7 +118,7 @@ impl EntrySet {
                     .get_children()
                     .into_iter()
                     .filter(|e| e.is_file())
-                    .filter(|f| !f.is_file_named(UNDERSCORE_FILE_NAME))
+                    .filter(|f| !f.is_named(UNDERSCORE_FILE_NAME))
                     .collect(),
             })
         } else {
@@ -162,7 +161,7 @@ impl EntrySet {
                         .get_children()
                         .into_iter()
                         .filter(|e| e.is_file())
-                        .filter(|f| !f.is_file_named(UNDERSCORE_FILE_NAME))
+                        .filter(|f| !f.is_named(UNDERSCORE_FILE_NAME))
                         .collect(),
                     rendering_files: base_path
                         .join(RENDERING_DIRECTORY)
@@ -178,7 +177,7 @@ impl EntrySet {
                         .get_children()
                         .into_iter()
                         .filter(|e| e.is_file())
-                        .filter(|f| !f.is_file_named(UNDERSCORE_FILE_NAME))
+                        .filter(|f| !f.is_named(UNDERSCORE_FILE_NAME))
                         .collect(),
                 })
             }
@@ -254,5 +253,4 @@ impl TryFrom<PathBuf> for FileSystem {
 pub mod data;
 pub mod file_types;
 pub mod identifiers;
-pub mod path_utils;
 pub mod sorted;

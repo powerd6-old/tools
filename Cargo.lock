@@ -290,6 +290,7 @@ dependencies = [
 name = "fs"
 version = "0.1.0"
 dependencies = [
+ "path_utils",
  "pathdiff",
  "pretty_assertions",
  "serde_json",

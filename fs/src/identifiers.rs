@@ -1,4 +1,6 @@
-use crate::{path_utils::PathUtils, Entry, EntrySet};
+use path_utils::identifier::IdentifierPaths;
+
+use crate::{Entry, EntrySet};
 
 impl Entry {
     pub fn get_id_from_nested_path(&self, entry_set: &EntrySet) -> Option<String> {

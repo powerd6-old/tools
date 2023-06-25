@@ -1,9 +1,8 @@
-use crate::{
-    file_types::DetectFileTypes, path_utils::PathUtils, Entry, FileSystemError, RENDERING_DIRECTORY,
-};
+use crate::{file_types::DetectFileTypes, Entry, FileSystemError, RENDERING_DIRECTORY};
 
 use std::{collections::HashMap, path::Path};
 
+use path_utils::name::NamePaths;
 use serde_json::Value;
 use tracing::{debug, instrument};
 
@@ -98,35 +97,26 @@ impl FileSystemData for Entry {
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
 
     use super::*;
+    use path_utils::{create_test_directory, create_test_file};
     use pretty_assertions::assert_eq;
     use serde_json::json;
     use testdir::testdir;
 
-    fn create_file(path: &PathBuf, contents: &str) -> PathBuf {
-        std::fs::write(path, contents).expect("File should be created correctly");
-        path.to_path_buf()
-    }
-    fn create_directory(path: &PathBuf) -> PathBuf {
-        std::fs::create_dir(path).expect("Directory should be created correctly");
-        path.to_path_buf()
-    }
-
     #[test]
     fn single_file() {
         let dir = testdir!();
-        let file = create_file(&dir.join("a.json"), r#"{"a":1}"#);
+        let file = create_test_file(&dir.join("a.json"), r#"{"a":1}"#);
         assert_eq!(Entry::File(file).try_get_data().unwrap(), json!({"a":1}))
     }
 
     #[test]
     fn multiple_files() {
         let dir = testdir!();
-        let root_file = create_file(&dir.join("a.json"), r#"{"a":1}"#);
-        let extra_file_txt = create_file(&dir.join("text.txt"), "simple text");
-        let extra_file_data = create_file(&dir.join("more_data.json"), r#"{"b":2}"#);
+        let root_file = create_test_file(&dir.join("a.json"), r#"{"a":1}"#);
+        let extra_file_txt = create_test_file(&dir.join("text.txt"), "simple text");
+        let extra_file_data = create_test_file(&dir.join("more_data.json"), r#"{"b":2}"#);
         assert_eq!(
             Entry::Directory {
                 root_file,
@@ -145,11 +135,11 @@ mod tests {
     #[test]
     fn multiple_files_and_rendering_directory() {
         let dir = testdir!();
-        let root_file = create_file(&dir.join("a.json"), r#"{"a":1}"#);
-        let extra_file_txt = create_file(&dir.join("text.txt"), "simple text");
-        let extra_file_data = create_file(&dir.join("more_data.json"), r#"{"b":2}"#);
-        let rendering = create_directory(&dir.join("rendering"));
-        let rendering_txt = create_file(&rendering.join("txt.hjs"), "my render template");
+        let root_file = create_test_file(&dir.join("a.json"), r#"{"a":1}"#);
+        let extra_file_txt = create_test_file(&dir.join("text.txt"), "simple text");
+        let extra_file_data = create_test_file(&dir.join("more_data.json"), r#"{"b":2}"#);
+        let rendering = create_test_directory(&dir.join("rendering"));
+        let rendering_txt = create_test_file(&rendering.join("txt.hjs"), "my render template");
         assert_eq!(
             Entry::RenderingDirectory {
                 root_file,
