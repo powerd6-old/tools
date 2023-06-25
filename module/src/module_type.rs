@@ -9,6 +9,8 @@ use fs::data::FileSystemData;
 use fs::Entry;
 use serde::Deserialize;
 use serde::Serialize;
+use tracing::debug;
+use tracing::instrument;
 
 use std::collections::HashMap;
 
@@ -51,7 +53,9 @@ impl ModuleType {
 impl TryFrom<Entry> for ModuleType {
     type Error = ModuleError;
 
+    #[instrument(skip(entry))]
     fn try_from(entry: Entry) -> Result<Self, Self::Error> {
+        debug!("Creating ModuleType from Entry");
         match entry.try_get_data() {
             Ok(value) => match value.as_object() {
                 Some(data) => match data.get(DESCRIPTION).and_then(|d| d.as_str()) {

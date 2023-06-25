@@ -19,7 +19,7 @@ impl FileSystemData for Path {
 }
 
 impl FileSystemData for Entry {
-    #[instrument]
+    #[instrument(skip(self))]
     fn try_get_data(&self) -> Result<Value, FileSystemError> {
         debug!("Getting the data from Entry");
         match self {

@@ -56,8 +56,9 @@ impl Module {
 impl TryFrom<Entry> for Module {
     type Error = ModuleError;
 
-    #[instrument]
+    #[instrument(skip(entry))]
     fn try_from(entry: Entry) -> Result<Self, Self::Error> {
+        debug!("Creating Module from Entry");
         match entry.try_get_data() {
             Ok(value) => match value.as_object() {
                 Some(data) => match (
@@ -116,7 +117,7 @@ impl TryFrom<Entry> for Module {
 impl TryFrom<FileSystem> for Module {
     type Error = ModuleError;
 
-    #[instrument]
+    #[instrument(skip(fs))]
     fn try_from(fs: FileSystem) -> Result<Self, Self::Error> {
         match TryInto::<Module>::try_into(fs.module) {
             Ok(mut module) => {
