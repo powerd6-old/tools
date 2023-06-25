@@ -90,24 +90,19 @@ impl TryFrom<Entry> for ModuleType {
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
 
     use super::*;
+    use path_utils::create_test_file;
     use pretty_assertions::assert_eq;
     use serde_json::json;
     use testdir::testdir;
-
-    fn create_file(path: &PathBuf, contents: &str) -> PathBuf {
-        std::fs::write(path, contents).expect("File should be created correctly");
-        path.to_path_buf()
-    }
 
     #[test]
     fn only_required_fields() {
         let dir = testdir!();
 
         assert_eq!(
-            ModuleType::try_from(Entry::File(create_file(
+            ModuleType::try_from(Entry::File(create_test_file(
                 &dir.join("test.json"),
                 r#"{"description": "this is a description"}"#
             )))
@@ -121,7 +116,7 @@ mod tests {
         let dir = testdir!();
 
         assert_eq!(
-            ModuleType::try_from(Entry::File(create_file(
+            ModuleType::try_from(Entry::File(create_test_file(
                 &dir.join("test.json"),
                 r#"{
                     "description": "this is a description",
@@ -158,7 +153,7 @@ mod tests {
         let dir = testdir!();
 
         assert_eq!(
-            ModuleType::try_from(Entry::File(create_file(
+            ModuleType::try_from(Entry::File(create_test_file(
                 &dir.join("test.json"),
                 r#"{
                     "description": "this is a description",

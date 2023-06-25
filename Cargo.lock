@@ -463,6 +463,7 @@ version = "0.1.0"
 dependencies = [
  "fs",
  "handlebars",
+ "path_utils",
  "pretty_assertions",
  "serde",
  "serde_json",

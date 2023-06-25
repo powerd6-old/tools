@@ -198,29 +198,21 @@ impl TryFrom<FileSystem> for Module {
 
 #[cfg(test)]
 mod tests {
-    use std::{collections::BTreeMap, path::PathBuf};
+    use std::collections::BTreeMap;
 
     use super::*;
     use fs::{CONTENTS_DIRECTORY, MODULE, TYPES_DIRECTORY};
+    use path_utils::{create_test_directory, create_test_file};
     use pretty_assertions::assert_eq;
     use serde_json::Value;
     use testdir::testdir;
-
-    fn create_file(path: &PathBuf, contents: &str) -> PathBuf {
-        std::fs::write(path, contents).expect("File should be created correctly");
-        path.to_path_buf()
-    }
-    fn create_directory(path: &PathBuf) -> PathBuf {
-        std::fs::create_dir(path).expect("Directory should be created correctly");
-        path.to_path_buf()
-    }
 
     #[test]
     fn only_required_fields() {
         let dir = testdir!();
 
         assert_eq!(
-            Module::try_from(Entry::File(create_file(
+            Module::try_from(Entry::File(create_test_file(
                 &dir.join("test.json"),
                 r#"{
                     "title": "title",
@@ -242,7 +234,7 @@ mod tests {
         let dir = testdir!();
 
         assert_eq!(
-            Module::try_from(Entry::File(create_file(
+            Module::try_from(Entry::File(create_test_file(
                 &dir.join("test.json"),
                 r#"{
                     "title": "title",
@@ -274,7 +266,7 @@ mod tests {
         let dir = testdir!();
 
         assert_eq!(
-            Module::try_from(Entry::File(create_file(
+            Module::try_from(Entry::File(create_test_file(
                 &dir.join("test.json"),
                 r#"{
                     "title": "title",
@@ -304,7 +296,7 @@ mod tests {
     fn from_file_system() {
         let dir = testdir!();
 
-        create_file(
+        create_test_file(
             &dir.join(format!("{}.json", MODULE)),
             r#"{
                 "title": "title",
@@ -324,8 +316,8 @@ mod tests {
               }"#,
         );
 
-        let types_dir = create_directory(&dir.join(TYPES_DIRECTORY));
-        create_file(
+        let types_dir = create_test_directory(&dir.join(TYPES_DIRECTORY));
+        create_test_file(
             &types_dir.join("b.json"),
             r#"{
                 "id": "b",
@@ -333,8 +325,8 @@ mod tests {
               }"#,
         );
 
-        let contents_dir = create_directory(&dir.join(CONTENTS_DIRECTORY));
-        create_file(
+        let contents_dir = create_test_directory(&dir.join(CONTENTS_DIRECTORY));
+        create_test_file(
             &contents_dir.join("b.json"),
             r#"{
                 "key": "value"
