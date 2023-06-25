@@ -2,7 +2,7 @@
 name = "module"
 description = "An oxidized representation of the powerd6 modules and their components."
 version = "0.1.0"
-edition.workspace = true
+edition = { workspace = true }
 
 [dependencies]
 fs = { workspace = true }
