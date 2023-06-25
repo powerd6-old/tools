@@ -43,20 +43,27 @@ impl PathUtils for Path {
 
     fn is_file_named(&self, file_name: &str) -> bool {
         self.file_name()
-            .map(|n| String::from(n.to_str().expect("File name is not a valid string")))
+            .map(|n| {
+                String::from(
+                    n.to_str()
+                        .expect("File name should be a valid UTF-8 String"),
+                )
+            })
             .map_or(false, |x| x.starts_with(file_name))
     }
 
     fn get_name_without_extension(&self) -> String {
         let name = self
             .file_name()
-            .expect("Path does not have a name")
+            .expect("Path should be a directory or a file and always have a name")
             .to_str()
-            .expect("Path name is not a valid string");
+            .expect("Path name should be a valid UTF-8 String");
         match self.extension() {
             Some(extension) => name
                 .replace(
-                    extension.to_str().expect("Extension is not a valid string"),
+                    extension
+                        .to_str()
+                        .expect("Extension should be a valid UTF-8 String"),
                     "",
                 )
                 .trim_end_matches('.')
@@ -75,7 +82,7 @@ impl PathUtils for Path {
                 .map(|c| {
                     c.as_os_str()
                         .to_str()
-                        .expect("Path fragments is not a valid strings")
+                        .expect("Path fragment should be valid UTF-8 String")
                 })
                 .filter(|s| !s.starts_with(UNDERSCORE_FILE_NAME))
                 .collect::<Vec<&str>>()
@@ -86,7 +93,7 @@ impl PathUtils for Path {
                         ".{}",
                         extension
                             .to_str()
-                            .expect("Extensions is not a valid strings")
+                            .expect("Extensions should be a valid UTF-8 String")
                     ),
                     "",
                 )
@@ -108,11 +115,11 @@ mod tests {
     use testdir::testdir;
 
     fn create_file(path: &PathBuf) -> PathBuf {
-        std::fs::write(path, "").expect("File could not be created");
+        std::fs::write(path, "").expect("File should be created correctly");
         path.to_path_buf()
     }
     fn create_directory(path: &PathBuf) -> PathBuf {
-        std::fs::create_dir(path).expect("Directory could not be created");
+        std::fs::create_dir(path).expect("Directory should be created correctly");
         path.to_path_buf()
     }
 

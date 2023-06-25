@@ -54,7 +54,7 @@ pub fn run(
         "{}.json",
         output_file_name
             .to_str()
-            .expect("output file name is not a valid string")
+            .expect("The output file name should be a valid UTF-8 String")
     ))?;
     debug!("About to write module as {:?}", output_type);
     let output_contents = match output_type {

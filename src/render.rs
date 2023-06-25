@@ -69,7 +69,7 @@ pub fn run(
         "{}.{}",
         output_file_name
             .to_str()
-            .expect("output file name is not a valid string"),
+            .expect("The output file name should be a valid UTF-8 String"),
         format
     ))?;
     write!(output_file, "{}", rendered_module)?;
@@ -88,7 +88,7 @@ fn get_rendering_templates(
             for (type_identifier, type_data) in module_types {
                 match &type_data.rendering {
                     Some(type_rendering) => {
-                        if let Some(rendering_content) = type_rendering.get(&format) {
+                        if let Some(rendering_content) = type_rendering.get(format) {
                             result.insert(type_identifier.clone(), rendering_content.clone());
                         } else {
                             error!(
@@ -125,7 +125,7 @@ fn render_contents(
                     Some(content_type) => {
                         let type_identifier: Identifier = content_type
                             .as_str()
-                            .expect("content type is not a string")
+                            .expect("The content type should be a valid UTF-8 String")
                             .to_string()
                             .into();
                         match templates.get(&type_identifier) {
@@ -136,7 +136,7 @@ fn render_contents(
                                 }
                                 Err(e) => {
                                     error!("Failed to render template for content {}", content_key);
-                                    return Err(RenderError::RenderingError(e.into()));
+                                    return Err(RenderError::RenderingError(e));
                                 }
                             },
                             None => {

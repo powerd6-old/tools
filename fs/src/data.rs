@@ -82,7 +82,7 @@ impl FileSystemData for Entry {
                         root_data_map.insert(
                             RENDERING_DIRECTORY.to_string(),
                             serde_json::to_value(rendering_templates_data)
-                                .expect("Rendering template data was not a valid json value"),
+                                .expect("The contents from the rendering directory were already converted to a HashMap and should be valid JSON Values"),
                         );
                         Ok(root_data)
                     }
@@ -106,11 +106,11 @@ mod tests {
     use testdir::testdir;
 
     fn create_file(path: &PathBuf, contents: &str) -> PathBuf {
-        std::fs::write(path, contents).expect("File could not be created");
+        std::fs::write(path, contents).expect("File should be created correctly");
         path.to_path_buf()
     }
     fn create_directory(path: &PathBuf) -> PathBuf {
-        std::fs::create_dir(path).expect("Directory could not be created");
+        std::fs::create_dir(path).expect("Directory should be created correctly");
         path.to_path_buf()
     }
 
