@@ -3,7 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use ::path_utils::{children::ChildrenPaths, name::NamePaths, PathUtils};
+use ::path_utils::{children::ChildrenPaths, name::NamePaths};
 use thiserror::Error;
 use tracing::{debug, info, instrument, warn};
 
