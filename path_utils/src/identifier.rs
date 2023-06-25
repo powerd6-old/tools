@@ -1,10 +1,11 @@
 use std::{
+    fmt::Debug,
     ops::Deref,
     path::{Component, Path},
 };
 
 use pathdiff::diff_paths;
-use tracing::debug;
+use tracing::{debug, instrument};
 
 use crate::name::NamePaths;
 
@@ -13,7 +14,8 @@ pub trait IdentifierPaths {
     fn get_id_from_path(&self, base: &Path) -> Option<String>;
 }
 
-impl<T: AsRef<Path>> IdentifierPaths for T {
+impl<T: AsRef<Path> + Debug> IdentifierPaths for T {
+    #[instrument]
     fn get_id_from_path(&self, base: &Path) -> Option<String> {
         let mut path: &Path = self.deref().as_ref();
 
