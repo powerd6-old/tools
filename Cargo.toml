@@ -17,13 +17,14 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
 
 [workspace]
-members = ["fs", "module", "path_utils"]
+members = ["file_data", "fs", "module", "path_utils"]
 
 [workspace.package]
 edition = "2021"
 
 [workspace.dependencies]
 clap = { version = "4.3.4", features = ["derive"] }
+file_data = { path = "./file_data" }
 fs = { path = "./fs" }
 handlebars = "4.3.7"
 module = { path = "./module" }
