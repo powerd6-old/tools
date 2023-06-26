@@ -1,9 +1,9 @@
 use crate::{FileDataError, FileTypeDataReader};
 use std::{fs::File, io::BufReader};
 
-pub struct YAML;
+pub struct Yaml;
 
-impl FileTypeDataReader for YAML {
+impl FileTypeDataReader for Yaml {
     fn try_read_file(path: &std::path::Path) -> Result<serde_json::Value, crate::FileDataError> {
         match File::open(path) {
             Ok(file) => {
@@ -52,7 +52,7 @@ mod tests {
         );
 
         assert_eq!(
-            YAML::try_read_file(&yaml).unwrap(),
+            Yaml::try_read_file(&yaml).unwrap(),
             json!({
               "key": "value",
               "integerValue": 1,

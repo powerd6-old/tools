@@ -1,4 +1,4 @@
-use self::{json::JSON, text::TEXT, yaml::YAML};
+use self::{json::Json, text::Text, yaml::Yaml};
 use crate::{FileDataError, FileTypeDataReader};
 use serde_json::Value;
 use std::{ffi::OsStr, ops::Deref, path::Path};
@@ -16,9 +16,9 @@ pub enum FileType {
 impl FileType {
     pub fn try_read_file(&self, path: &Path) -> Result<Value, FileDataError> {
         match self {
-            FileType::JSON => JSON::try_read_file(path),
-            FileType::YAML => YAML::try_read_file(path),
-            FileType::TEXT => TEXT::try_read_file(path),
+            FileType::JSON => Json::try_read_file(path),
+            FileType::YAML => Yaml::try_read_file(path),
+            FileType::TEXT => Text::try_read_file(path),
         }
     }
 }
