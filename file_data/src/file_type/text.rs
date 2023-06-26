@@ -1,6 +1,5 @@
-use std::fs::{self};
-
 use crate::{FileDataError, FileTypeDataReader};
+use std::fs::{self};
 
 pub struct TEXT;
 

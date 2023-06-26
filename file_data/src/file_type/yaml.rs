@@ -1,6 +1,5 @@
-use std::{fs::File, io::BufReader};
-
 use crate::{FileDataError, FileTypeDataReader};
+use std::{fs::File, io::BufReader};
 
 pub struct YAML;
 
@@ -19,8 +18,6 @@ impl FileTypeDataReader for YAML {
 
 #[cfg(test)]
 mod tests {
-
-    use crate::yaml;
 
     use super::*;
     use path_utils::create_test_file;
@@ -55,7 +52,7 @@ mod tests {
         );
 
         assert_eq!(
-            yaml::YAML::try_read_file(&yaml).unwrap(),
+            YAML::try_read_file(&yaml).unwrap(),
             json!({
               "key": "value",
               "integerValue": 1,

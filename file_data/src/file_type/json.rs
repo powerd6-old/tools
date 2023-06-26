@@ -1,6 +1,5 @@
-use std::{fs::File, io::BufReader};
-
 use crate::{FileDataError, FileTypeDataReader};
+use std::{fs::File, io::BufReader};
 
 pub struct JSON;
 
