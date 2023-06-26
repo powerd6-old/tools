@@ -1,14 +1,27 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+use serde_json::Value;
+use thiserror::Error;
+
+/// The errors that can happen when constructing a Module
+#[derive(Error, Debug)]
+pub enum ModuleError {
+    #[error("received a value that was not an object")]
+    NotAnObject(Value),
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+/// The key to the contents property
+pub const CONTENTS: &str = "contents";
+/// The key to the types property
+pub const TYPES: &str = "types";
+/// The key to the description property
+pub const DESCRIPTION: &str = "description";
+/// The key to the schema property
+pub const SCHEMA: &str = "schema";
+/// The key to the rendering property
+pub const RENDERING: &str = "rendering";
+/// The key to the title property
+pub const TITLE: &str = "title";
+/// The key to the source property
+pub const SOURCE: &str = "source";
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+pub mod module;
+pub mod module_type;
