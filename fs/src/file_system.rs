@@ -6,7 +6,7 @@ use crate::{
 use std::path::PathBuf;
 
 /// A representation of a file system, meant to build Modules from.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct FileSystem {
     /// The root directory this FileSystem was built from.
     root_directory: PathBuf,
@@ -48,7 +48,7 @@ mod tests {
     use crate::MODULE;
 
     use super::*;
-    use path_utils::create_test_file;
+    use path_utils::{create_test_directory, create_test_file};
     use pretty_assertions::assert_eq;
     use testdir::testdir;
 
@@ -75,7 +75,48 @@ mod tests {
     }
 
     #[test]
+    fn creates_with_only_module() {
+        let dir = testdir!();
+
+        let module_file = create_test_file(&dir.join(format!("{}.json", MODULE)), "");
+
+        assert_eq!(
+            FileSystem::try_from(dir.clone()).unwrap(),
+            FileSystem {
+                root_directory: dir,
+                module: module_file.to_entry().unwrap(),
+                types: None,
+                contents: None
+            }
+        )
+    }
+
+    #[test]
     fn creates_with_optional_types_and_contents() {
-        todo!()
+        let dir = testdir!();
+
+        let module_file = create_test_file(&dir.join(format!("{}.json", MODULE)), "");
+
+        let contents_dir = create_test_directory(&dir.join(CONTENTS_DIRECTORY));
+        let first_content = create_test_file(&contents_dir.join("a.json"), "");
+
+        let types_dir = create_test_directory(&dir.join(TYPES_DIRECTORY));
+        let first_type = create_test_file(&types_dir.join("a.json"), "");
+
+        assert_eq!(
+            FileSystem::try_from(dir.clone()).unwrap(),
+            FileSystem {
+                root_directory: dir,
+                module: module_file.to_entry().unwrap(),
+                types: Some(EntrySet {
+                    base_path: types_dir,
+                    entries: vec![first_type.to_entry().unwrap()]
+                }),
+                contents: Some(EntrySet {
+                    base_path: contents_dir,
+                    entries: vec![first_content.to_entry().unwrap()]
+                }),
+            }
+        )
     }
 }
