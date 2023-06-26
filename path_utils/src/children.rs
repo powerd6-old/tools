@@ -26,7 +26,6 @@ impl<T: AsRef<Path>> ChildrenPaths for T {
     fn get_first_child_named(&self, name: &str) -> Option<PathBuf> {
         self.get_children()
             .iter()
-            .filter(|c| c.is_file())
             .find(|f| f.is_named(name))
             .cloned()
     }
