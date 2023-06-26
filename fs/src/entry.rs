@@ -8,7 +8,7 @@ use path_utils::{children::ChildrenPaths, name::NamePaths};
 use crate::{FileSystemError, UNDERSCORE_FILE_NAME};
 
 /// A collection of one or more file system resources that corresponds to a single data value.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Entry {
     /// The data object is represented by a single file.
     File(PathBuf),
