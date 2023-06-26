@@ -1,4 +1,4 @@
-use std::{error::Error, path::Path};
+use std::path::Path;
 use thiserror::Error;
 
 /// The errors that can happen when reading a file into data

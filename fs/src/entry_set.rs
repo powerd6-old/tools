@@ -1,11 +1,12 @@
 use path_utils::{children::ChildrenPaths, name::NamePaths};
-use tracing::debug;
+use tracing::{debug, error, instrument};
 
 use crate::{
     entry::{Entry, EntryFromNamedPath},
     RENDERING_DIRECTORY, UNDERSCORE_FILE_NAME,
 };
 use std::{
+    error,
     ops::Deref,
     path::{Path, PathBuf},
 };
@@ -38,9 +39,11 @@ pub trait EntrySetFromPath {
 }
 
 impl<T: AsRef<Path>> EntrySetFromPath for T {
+    #[instrument(skip(self), fields(path=self.deref().as_ref().to_str().expect("Path should be a valid UTF-8 String")))]
     fn to_entry_set(&self) -> Option<EntrySet> {
         let path: &Path = self.deref().as_ref();
         if !path.exists() {
+            error!("Tried to map an inexistent Path to an EntrySet");
             return None;
         }
         let mut result: EntrySet;
@@ -48,11 +51,13 @@ impl<T: AsRef<Path>> EntrySetFromPath for T {
             .get_first_child_named(UNDERSCORE_FILE_NAME)
             .and(path.to_entry())
         {
+            debug!("Found an UNDERSCORE file in Path. Mapping it to single Entry::Directory (or Entry::RenderingDirectory).");
             result = EntrySet {
                 base_path: path.to_path_buf(),
                 entries: vec![path_entry],
             };
         } else {
+            debug!("Found no UNDERSCORE file in Path. Mapping each nested file to their own Entry::File.");
             let path_entries = path
                 .get_children()
                 .into_iter()
@@ -71,7 +76,15 @@ impl<T: AsRef<Path>> EntrySetFromPath for T {
             .filter(|e| e.is_dir())
             .filter(|d| !d.is_named(RENDERING_DIRECTORY))
             .filter_map(|d| d.to_entry_set());
+        debug!("Mapping nested directories in Path.");
         nested_entries.for_each(|n| {
+            debug!(
+                nested_path = n
+                    .base_path
+                    .to_str()
+                    .expect("Path should be a valid UTF-8 String"),
+                "Extending results with nested EntrySet"
+            );
             result.extend_entries(n);
         });
         Some(result)

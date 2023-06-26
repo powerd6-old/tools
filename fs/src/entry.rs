@@ -4,6 +4,7 @@ use std::{
 };
 
 use path_utils::{children::ChildrenPaths, name::NamePaths};
+use tracing::{debug, instrument};
 
 use crate::{FileSystemError, RENDERING_DIRECTORY, UNDERSCORE_FILE_NAME};
 
@@ -36,20 +37,24 @@ pub trait EntryFromNamedPath {
 }
 
 impl<T: AsRef<Path>> EntryFromNamedPath for T {
+    #[instrument(skip(self))]
     fn has_entry_named(&self, name: String) -> Option<Entry> {
         let path: &Path = self.deref().as_ref();
         path.get_first_child_named(&name).and_then(|c| c.to_entry())
     }
 
+    #[instrument(skip(self))]
     fn to_entry(&self) -> Option<Entry> {
         let path: &Path = self.deref().as_ref();
         if path.is_file() {
+            debug!("Path is a file. Mapping to Entry::File.");
             Some(Entry::File(path.to_path_buf()))
         } else {
             match path.get_first_child_named(UNDERSCORE_FILE_NAME) {
                 Some(underscore_file) => {
                     let rendering_directory = path.join(RENDERING_DIRECTORY);
                     if rendering_directory.exists() {
+                        debug!("Path is a directory with an UNDERSCORE file and RENDERING directory. Mapping to Entry::RenderingDirectory.");
                         Some(Entry::RenderingDirectory {
                             root_file: underscore_file,
                             extra_files: path
@@ -65,6 +70,7 @@ impl<T: AsRef<Path>> EntryFromNamedPath for T {
                                 .collect(),
                         })
                     } else {
+                        debug!("Path is a directory with an UNDERSCORE file. Mapping to Entry::Directory.");
                         Some(Entry::Directory {
                             root_file: underscore_file,
                             extra_files: path

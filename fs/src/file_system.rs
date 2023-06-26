@@ -1,3 +1,5 @@
+use tracing::{debug, instrument};
+
 use crate::{
     entry::{Entry, EntryFromNamedPath},
     entry_set::{EntrySet, EntrySetFromPath},
@@ -21,6 +23,7 @@ pub struct FileSystem {
 impl TryFrom<PathBuf> for FileSystem {
     type Error = FileSystemError;
 
+    #[instrument]
     fn try_from(value: PathBuf) -> Result<Self, Self::Error> {
         if value.is_file() {
             return Err(FileSystemError::ExpectedDirectory(value.into_boxed_path()));
@@ -30,6 +33,12 @@ impl TryFrom<PathBuf> for FileSystem {
             Some(module_entry) => {
                 let types_entry_set = value.join(TYPES_DIRECTORY).to_entry_set();
                 let contents_entry_set = value.join(CONTENTS_DIRECTORY).to_entry_set();
+
+                debug!(
+                    type_size = types_entry_set.as_ref().map_or(0, |t| t.entries.len()),
+                    content_size = contents_entry_set.as_ref().map_or(0, |t| t.entries.len()),
+                    "Creating FileSystem."
+                );
 
                 Ok(FileSystem {
                     root_directory: value,
