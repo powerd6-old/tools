@@ -2,6 +2,7 @@ use std::{ffi::OsStr, ops::Deref, path::Path};
 
 use json::JSON;
 use serde_json::Value;
+use std::error::Error;
 use strum::VariantNames;
 use strum_macros::{EnumString, EnumVariantNames};
 use text::TEXT;
@@ -11,12 +12,15 @@ use yaml::YAML;
 /// The errors that can happen when reading a file into data
 #[derive(Error, Debug)]
 pub enum FileDataError {
-    #[error("unsupported file type. Expected one of {:?}", FileType::VARIANTS)]
+    #[error("unsupported file type (expected one of {:?})", FileType::VARIANTS)]
     UnsupportedFileType(Box<Path>),
+    #[error("unable to open file")]
+    UnableToOpenFile(#[source] Box<dyn Error>),
+    #[error("the contents of the file were invalid")]
+    InvalidFileContents(#[source] Box<dyn Error>),
 }
 
-pub trait FileData {
-    /// Attempts to read a file into a JSON Value
+pub(crate) trait FileTypeDataReader {
     fn try_read_file(path: &Path) -> Result<Value, FileDataError>;
 }
 
@@ -36,6 +40,19 @@ impl FileType {
             FileType::YAML => YAML::try_read_file(path),
             FileType::TEXT => TEXT::try_read_file(path),
         }
+    }
+}
+
+pub trait FileData {
+    /// Attempts to read the file into a valid JSON Value
+    fn try_read_file(&self) -> Result<Value, FileDataError>;
+}
+
+impl<T: AsRef<Path>> FileData for T {
+    fn try_read_file(&self) -> Result<Value, FileDataError> {
+        let path: &Path = self.deref().as_ref();
+        let file_type = self.try_get_file_type()?;
+        file_type.try_read_file(path)
     }
 }
 

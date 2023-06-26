@@ -1,9 +1,13 @@
-use crate::FileData;
+use std::fs::{self};
+
+use crate::{FileDataError, FileTypeDataReader};
 
 pub struct TEXT;
 
-impl FileData for TEXT {
+impl FileTypeDataReader for TEXT {
     fn try_read_file(path: &std::path::Path) -> Result<serde_json::Value, crate::FileDataError> {
-        todo!()
+        fs::read_to_string(path)
+            .map(serde_json::Value::String)
+            .map_err(|e| FileDataError::UnableToOpenFile(e.into()))
     }
 }
