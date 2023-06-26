@@ -101,4 +101,23 @@ mod tests {
             }
         )
     }
+
+    #[test]
+    fn maps_nested_directories() {
+        let dir = testdir!();
+
+        let first_dir = create_test_directory(&dir.join("first"));
+        let first_file = create_test_file(&first_dir.join("a.json"), "");
+
+        let second_dir = create_test_directory(&dir.join("second"));
+        let second_file = create_test_file(&second_dir.join("b.json"), "");
+
+        assert_eq!(
+            dir.to_entry_set().unwrap(),
+            EntrySet {
+                base_path: dir,
+                entries: vec![Entry::File(first_file), Entry::File(second_file)]
+            }
+        )
+    }
 }
