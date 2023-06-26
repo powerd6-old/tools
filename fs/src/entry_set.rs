@@ -1,6 +1,10 @@
+use path_utils::{children::ChildrenPaths, name::NamePaths};
 use tracing::debug;
 
-use crate::entry::Entry;
+use crate::{
+    entry::{Entry, EntryFromNamedPath},
+    RENDERING_DIRECTORY, UNDERSCORE_FILE_NAME,
+};
 use std::{
     ops::Deref,
     path::{Path, PathBuf},
@@ -12,6 +16,16 @@ use std::{
 pub struct EntrySet {
     base_path: PathBuf,
     entries: Vec<Entry>,
+}
+
+impl EntrySet {
+    /// Extends an EntrySet with entries from another.
+    ///
+    /// It will use the `base_path` from the original EntrySet.
+    fn extend_entries(&mut self, extension: EntrySet) -> &Self {
+        self.entries.extend(extension.entries);
+        self
+    }
 }
 
 pub trait EntrySetFromPath {
@@ -29,7 +43,38 @@ impl<T: AsRef<Path>> EntrySetFromPath for T {
         if !path.exists() {
             return None;
         }
-        todo!()
+        let mut result: EntrySet;
+        if let Some(path_entry) = path
+            .get_first_child_named(UNDERSCORE_FILE_NAME)
+            .and(path.to_entry())
+        {
+            result = EntrySet {
+                base_path: path.to_path_buf(),
+                entries: vec![path_entry],
+            };
+        } else {
+            let path_entries = path
+                .get_children()
+                .into_iter()
+                .filter(|e| e.is_file())
+                .map(Entry::File)
+                .collect();
+            result = EntrySet {
+                base_path: path.to_path_buf(),
+                entries: path_entries,
+            };
+        }
+        // Loop over nested directories (except RENDERING)
+        let nested_entries = path
+            .get_children()
+            .into_iter()
+            .filter(|e| e.is_dir())
+            .filter(|d| !d.is_named(RENDERING_DIRECTORY))
+            .filter_map(|d| d.to_entry_set());
+        nested_entries.for_each(|n| {
+            result.extend_entries(n);
+        });
+        Some(result)
     }
 }
 
