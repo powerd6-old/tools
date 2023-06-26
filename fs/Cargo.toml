@@ -11,6 +11,7 @@ serde_json = { workspace = true }
 serde_yaml = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
+typed-builder = { workspace = true }
 
 [dev-dependencies]
 testdir = { workspace = true }
