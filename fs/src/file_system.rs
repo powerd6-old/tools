@@ -1,24 +1,20 @@
 use crate::{
     entry::{Entry, EntryFromNamedPath},
-    entry_set::EntrySet,
+    entry_set::{EntrySet, EntrySetFromPath},
     FileSystemError, CONTENTS_DIRECTORY, MODULE, TYPES_DIRECTORY,
 };
 use std::path::PathBuf;
 
-use typed_builder::TypedBuilder;
-
 /// A representation of a file system, meant to build Modules from.
-#[derive(TypedBuilder, Debug)]
+#[derive(Debug)]
 pub struct FileSystem {
     /// The root directory this FileSystem was built from.
     root_directory: PathBuf,
     // The module information
     module: Entry,
     // An optional set of entries that define types.
-    #[builder(default, setter(strip_option))]
     types: Option<EntrySet>,
     // An optional set of entries that define contents.
-    #[builder(default, setter(strip_option))]
     contents: Option<EntrySet>,
 }
 
@@ -29,14 +25,20 @@ impl TryFrom<PathBuf> for FileSystem {
         if value.is_file() {
             return Err(FileSystemError::ExpectedDirectory(value.into_boxed_path()));
         }
-        let module_entry = value.has_entry_named(MODULE.to_string());
-        if module_entry.is_none() {
-            return Err(FileSystemError::MissingRequiredEntry(MODULE.to_string()));
-        } else {
-            let types_entry_set = value.join(TYPES_DIRECTORY).to_entry_set();
-            let contents_entry_set = value.join(CONTENTS_DIRECTORY).to_entry_set();
+        match value.has_entry_named(MODULE.to_string()) {
+            None => Err(FileSystemError::MissingRequiredEntry(MODULE.to_string())),
+            Some(module_entry) => {
+                let types_entry_set = value.join(TYPES_DIRECTORY).to_entry_set();
+                let contents_entry_set = value.join(CONTENTS_DIRECTORY).to_entry_set();
+
+                Ok(FileSystem {
+                    root_directory: value,
+                    module: module_entry,
+                    types: types_entry_set,
+                    contents: contents_entry_set,
+                })
+            }
         }
-        todo!()
     }
 }
 
@@ -63,12 +65,17 @@ mod tests {
     }
 
     #[test]
-    fn fails_if_no_module_entry_exists() {
+    fn cannot_create_if_no_module_entry_exists() {
         let dir = testdir!();
 
         assert_eq!(
             FileSystem::try_from(dir).unwrap_err(),
             FileSystemError::MissingRequiredEntry(MODULE.to_string())
         )
+    }
+
+    #[test]
+    fn creates_with_optional_types_and_contents() {
+        todo!()
     }
 }
