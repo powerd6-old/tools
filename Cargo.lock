@@ -284,6 +284,7 @@ version = "0.1.0"
 dependencies = [
  "file_data",
  "fs",
+ "path_utils",
  "pretty_assertions",
  "serde_json",
  "testdir",
