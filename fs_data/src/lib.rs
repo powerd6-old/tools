@@ -24,6 +24,7 @@ pub trait EntryData {
 }
 
 impl EntryData for Vec<PathBuf> {
+    // TODO: implement tests
     fn try_get_data(&self) -> Result<Value, FileSystemDataError> {
         let mut result: HashMap<String, Value> = HashMap::new();
         for file in self {
@@ -40,6 +41,7 @@ impl EntryData for Vec<PathBuf> {
 }
 
 impl EntryData for Entry {
+    // TODO: implement tests
     fn try_get_data(&self) -> Result<Value, FileSystemDataError> {
         match self {
             Entry::File(file) => file
