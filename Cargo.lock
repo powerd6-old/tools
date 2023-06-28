@@ -279,6 +279,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "fs_data"
+version = "0.1.0"
+dependencies = [
+ "file_data",
+ "fs",
+ "pretty_assertions",
+ "serde_json",
+ "testdir",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
 name = "gimli"
 version = "0.27.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -416,6 +429,7 @@ name = "module"
 version = "0.1.0"
 dependencies = [
  "fs",
+ "fs_data",
  "path_utils",
  "pretty_assertions",
  "serde",
