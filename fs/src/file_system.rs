@@ -13,7 +13,7 @@ pub struct FileSystem {
     /// The root directory this FileSystem was built from.
     root_directory: PathBuf,
     // The module information
-    module: Entry,
+    pub module: Entry,
     // An optional set of entries that define types.
     types: Option<EntrySet>,
     // An optional set of entries that define contents.

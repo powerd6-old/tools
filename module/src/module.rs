@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 
 use fs::file_system::FileSystem;
+use fs_data::EntryData;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use url::Url;
@@ -30,7 +31,8 @@ pub struct Module {
 impl TryFrom<FileSystem> for Module {
     type Error = ModuleError;
 
-    fn try_from(value: FileSystem) -> Result<Self, Self::Error> {
+    fn try_from(filesystem: FileSystem) -> Result<Self, Self::Error> {
+        let module = filesystem.module.try_get_data();
         todo!()
     }
 }
