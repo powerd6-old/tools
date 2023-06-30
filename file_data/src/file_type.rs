@@ -3,6 +3,7 @@ use crate::{FileDataError, FileTypeDataReader};
 use serde_json::Value;
 use std::{ffi::OsStr, ops::Deref, path::Path};
 use strum_macros::{EnumString, EnumVariantNames};
+use tracing::instrument;
 
 #[derive(Debug, EnumString, EnumVariantNames)]
 pub enum FileType {
@@ -14,6 +15,7 @@ pub enum FileType {
 }
 
 impl FileType {
+    #[instrument]
     pub fn try_read_file(&self, path: &Path) -> Result<Value, FileDataError> {
         match self {
             FileType::JSON => Json::try_read_file(path),
