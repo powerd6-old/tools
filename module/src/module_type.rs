@@ -4,6 +4,7 @@ use fs::entry::Entry;
 use fs_data::EntryData;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use tracing::instrument;
 
 use crate::ModuleError;
 
@@ -23,6 +24,7 @@ pub struct ModuleType {
 impl TryFrom<Entry> for ModuleType {
     type Error = ModuleError;
 
+    #[instrument]
     fn try_from(entry: Entry) -> Result<ModuleType, ModuleError> {
         match entry.try_get_data() {
             Ok(entry_data) => match serde_json::from_value::<ModuleType>(entry_data.clone()) {

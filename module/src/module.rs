@@ -3,6 +3,7 @@ use fs_data::EntryData;
 use path_utils::identifier::IdentifierPaths;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use tracing::{info, instrument};
 use url::Url;
 
 use crate::{module_type::ModuleType, JsonMap, ModuleError};
@@ -65,12 +66,14 @@ impl Module {
 impl TryFrom<FileSystem> for Module {
     type Error = ModuleError;
 
+    #[instrument(skip(filesystem))]
     fn try_from(filesystem: FileSystem) -> Result<Module, ModuleError> {
         match filesystem.module.try_get_data() {
             Ok(module_data) => match serde_json::from_value::<Module>(module_data.clone()) {
                 Ok(module) => {
                     let mut result = module;
                     if let Some(fs_types) = filesystem.types {
+                        info!("Loading types from file system");
                         for type_entry in fs_types.entries.iter() {
                             let identifier = get_identifier_from(type_entry, &fs_types)?;
                             let module_type = ModuleType::try_from(type_entry.clone())?;
@@ -78,6 +81,7 @@ impl TryFrom<FileSystem> for Module {
                         }
                     }
                     if let Some(fs_contents) = filesystem.contents {
+                        info!("Loading contents from file system");
                         for content_entry in fs_contents.entries.iter() {
                             let identifier = get_identifier_from(content_entry, &fs_contents)?;
                             let content_data = content_entry
