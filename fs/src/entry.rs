@@ -6,10 +6,10 @@ use std::{
 use path_utils::{children::ChildrenPaths, name::NamePaths};
 use tracing::{debug, instrument};
 
-use crate::{FileSystemError, RENDERING_DIRECTORY, UNDERSCORE_FILE_NAME};
+use crate::{RENDERING_DIRECTORY, UNDERSCORE_FILE_NAME};
 
 /// A collection of one or more file system resources that corresponds to a single data value.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Entry {
     /// The data object is represented by a single file.
     File(PathBuf),

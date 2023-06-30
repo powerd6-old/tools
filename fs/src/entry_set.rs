@@ -15,8 +15,8 @@ use std::{
 /// This structure does not represent the number of levels each entry is nested at.
 #[derive(Debug, PartialEq)]
 pub struct EntrySet {
-    pub(crate) base_path: PathBuf,
-    pub(crate) entries: Vec<Entry>,
+    pub base_path: PathBuf,
+    pub entries: Vec<Entry>,
 }
 
 impl EntrySet {

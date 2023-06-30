@@ -1,5 +1,6 @@
+use fs::entry::Entry;
 use serde_json::Value;
-use std::{collections::BTreeMap, error::Error};
+use std::{collections::BTreeMap, error::Error, path::PathBuf};
 use thiserror::Error;
 
 /// The errors that can happen when constructing a Module
@@ -13,6 +14,8 @@ pub enum ModuleError {
     MissingRequired(Box<str>),
     #[error("the field is not of the expected type")]
     IncompatibleFieldType(Box<Value>),
+    #[error("Unable to create a valid identifier from entry: `{0}` and  base: `{1}`.")]
+    InvalidIdentifier(PathBuf, PathBuf),
 }
 
 /// The key to the contents property

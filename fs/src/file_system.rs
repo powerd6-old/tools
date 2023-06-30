@@ -15,9 +15,9 @@ pub struct FileSystem {
     // The module information
     pub module: Entry,
     // An optional set of entries that define types.
-    types: Option<EntrySet>,
+    pub types: Option<EntrySet>,
     // An optional set of entries that define contents.
-    contents: Option<EntrySet>,
+    pub contents: Option<EntrySet>,
 }
 
 impl TryFrom<PathBuf> for FileSystem {
