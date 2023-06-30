@@ -10,7 +10,6 @@ use module::rendering::{RenderingContent, RenderingFormat};
 
 use self::thiserror::Error;
 use module::module::Module;
-use module::Identifier;
 use std::collections::HashMap;
 use std::error::Error;
 use std::io::BufReader;

@@ -8,7 +8,7 @@ edition = { workspace = true }
 fs = { workspace = true }
 fs_data = { workspace = true }
 path_utils = { workspace = true }
-serde = { workspace = true , features = ["derive"] }
+serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }

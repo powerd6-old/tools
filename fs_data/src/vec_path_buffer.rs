@@ -40,10 +40,10 @@ mod tests {
         let file_c = create_test_file(&dir.join("c.txt"), "c");
         let file_d = create_test_file(&dir.join("d.txt"), "d");
 
-        let vect = vec![file_a, file_b, file_c, file_d];
+        let vector = vec![file_a, file_b, file_c, file_d];
 
         assert_eq!(
-            vect.try_get_data().unwrap(),
+            vector.try_get_data().unwrap(),
             json!({
                 "a": "a",
                 "b": "b",

@@ -120,7 +120,7 @@ mod tests {
 
         let some_dir = create_test_directory(&dir.join(dir_name));
 
-        let some_file = create_test_file(&some_dir.join("a.json"), "");
+        create_test_file(&some_dir.join("a.json"), "");
 
         assert!(dir.has_entry_named(dir_name.to_string()).is_none());
     }

@@ -6,7 +6,6 @@ use crate::{
     RENDERING_DIRECTORY, UNDERSCORE_FILE_NAME,
 };
 use std::{
-    error,
     ops::Deref,
     path::{Path, PathBuf},
 };

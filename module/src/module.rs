@@ -11,7 +11,7 @@ use crate::{module_type::ModuleType, JsonMap, ModuleError};
 ///
 /// While this object does not perform validation on it's own,
 /// it creates an uniform structure to do so.
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Module {
     /// The title of the module.
     title: String,

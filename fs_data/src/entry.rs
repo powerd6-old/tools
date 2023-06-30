@@ -18,7 +18,7 @@ impl EntryData for Entry {
                     if let Some(root_data_object) = root_data.as_object() {
                         let mut result = root_data_object.clone();
                         let extra_files_data = extra_files.try_get_data()?;
-                        let extra_data = extra_files_data.as_object().expect("When a Vec of PathBufs is transformed into data, the result is always a valid Object");
+                        let extra_data = extra_files_data.as_object().expect("When a Vec of Path Buffers is transformed into data, the result is always a valid Object");
                         extra_data.iter().for_each(|(k, v)| {
                             result.insert(k.clone(), v.clone());
                         });
@@ -39,7 +39,7 @@ impl EntryData for Entry {
                     if let Some(root_data_object) = root_data.as_object() {
                         let mut result = root_data_object.clone();
                         let extra_files_data = extra_files.try_get_data()?;
-                        let extra_data = extra_files_data.as_object().expect("When a Vec of PathBufs is transformed into data, the result is always a valid Object");
+                        let extra_data = extra_files_data.as_object().expect("When a Vec of Path Buffers is transformed into data, the result is always a valid Object");
                         extra_data.iter().for_each(|(k, v)| {
                             result.insert(k.clone(), v.clone());
                         });

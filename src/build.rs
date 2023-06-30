@@ -5,7 +5,7 @@ extern crate tracing;
 extern crate tracing_subscriber;
 
 use clap::{Args, ValueEnum};
-use fs::FileSystem;
+use fs::file_system::FileSystem;
 use module::module::Module;
 use std::io::Write;
 use std::{convert::TryFrom, error::Error, ffi::OsString, fs::File, path::PathBuf};

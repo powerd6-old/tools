@@ -1,4 +1,3 @@
-use fs::entry::Entry;
 use serde_json::Value;
 use std::{collections::BTreeMap, error::Error, path::PathBuf};
 use thiserror::Error;

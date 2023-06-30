@@ -21,4 +21,4 @@ pub trait EntryData {
 }
 
 pub mod entry;
-pub mod vec_pathbuf;
+pub mod vec_path_buffer;
