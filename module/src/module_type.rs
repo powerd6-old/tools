@@ -9,7 +9,7 @@ use tracing::instrument;
 use crate::ModuleError;
 
 /// The representation of a powerd6 type.
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct ModuleType {
     /// The human-readable description of what the type represents.
     description: String,
@@ -18,7 +18,7 @@ pub struct ModuleType {
     schema: Option<Value>,
     /// The rendering code for all the supported formats.
     #[serde(skip_serializing_if = "Option::is_none")]
-    rendering: Option<BTreeMap<String, String>>,
+    pub rendering: Option<BTreeMap<String, String>>,
 }
 
 impl TryFrom<Entry> for ModuleType {
