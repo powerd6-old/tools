@@ -1,5 +1,5 @@
 use serde_json::Value;
-use std::error::Error;
+use std::{collections::BTreeMap, error::Error};
 use thiserror::Error;
 
 /// The errors that can happen when constructing a Module
@@ -29,6 +29,8 @@ pub const RENDERING: &str = "rendering";
 pub const TITLE: &str = "title";
 /// The key to the source property
 pub const SOURCE: &str = "source";
+
+type JsonMap = BTreeMap<String, Value>;
 
 pub mod module;
 pub mod module_type;

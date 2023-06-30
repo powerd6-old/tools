@@ -1,13 +1,14 @@
-use std::{collections::BTreeMap, f32::consts::E};
+use std::collections::BTreeMap;
 
 use fs::file_system::FileSystem;
 use fs_data::EntryData;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
-use tracing::field;
 use url::Url;
 
-use crate::{module_type::ModuleType, ModuleError, CONTENTS, DESCRIPTION, SOURCE, TITLE, TYPES};
+use crate::{
+    module_type::ModuleType, JsonMap, ModuleError, CONTENTS, DESCRIPTION, SOURCE, TITLE, TYPES,
+};
 
 /// A document that contains information for a powerd6 module.
 ///
@@ -26,7 +27,7 @@ pub struct Module {
     types: Option<BTreeMap<String, ModuleType>>,
     /// A collection of contents defined in this module, the keys of the map are the unique identifiers of the content pieces.
     #[serde(skip_serializing_if = "Option::is_none")]
-    contents: Option<BTreeMap<String, BTreeMap<String, Value>>>,
+    contents: Option<BTreeMap<String, JsonMap>>,
 }
 
 impl TryFrom<FileSystem> for Module {
@@ -106,8 +107,6 @@ fn get_data_field_as_types(
         None => Ok(None),
     }
 }
-
-type JsonMap = BTreeMap<String, Value>;
 
 fn get_data_field_as_contents(
     data: &Map<String, Value>,
