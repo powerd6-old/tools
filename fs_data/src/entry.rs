@@ -1,10 +1,12 @@
 use file_data::FileData;
 use fs::entry::Entry;
 use serde_json::Value;
+use tracing::instrument;
 
 use crate::{EntryData, FileSystemDataError};
 
 impl EntryData for Entry {
+    #[instrument]
     fn try_get_data(&self) -> Result<Value, FileSystemDataError> {
         match self {
             Entry::File(file) => file
