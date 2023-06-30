@@ -1,4 +1,5 @@
 use serde_json::Value;
+use std::error::Error;
 use thiserror::Error;
 
 /// The errors that can happen when constructing a Module
@@ -6,6 +7,12 @@ use thiserror::Error;
 pub enum ModuleError {
     #[error("received a value that was not an object")]
     NotAnObject(Value),
+    #[error("unable to get the data for a required field")]
+    UnableToGetRequiredData(#[source] Box<dyn Error>),
+    #[error("a required field was missing")]
+    MissingRequired(Box<str>),
+    #[error("the field is not of the expected type")]
+    IncompatibleFieldType(Box<Value>),
 }
 
 /// The key to the contents property

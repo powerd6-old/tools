@@ -1,12 +1,12 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, f32::consts::E};
 
 use fs::file_system::FileSystem;
 use fs_data::EntryData;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{Map, Value};
 use url::Url;
 
-use crate::{module_type::ModuleType, ModuleError};
+use crate::{module_type::ModuleType, ModuleError, DESCRIPTION, SOURCE, TITLE};
 
 /// A document that contains information for a powerd6 module.
 ///
@@ -31,8 +31,28 @@ pub struct Module {
 impl TryFrom<FileSystem> for Module {
     type Error = ModuleError;
 
-    fn try_from(filesystem: FileSystem) -> Result<Self, Self::Error> {
-        let module = filesystem.module.try_get_data();
-        todo!()
+    fn try_from(filesystem: FileSystem) -> Result<Module, ModuleError> {
+        match filesystem.module.try_get_data() {
+            Ok(fs_module_data) => match fs_module_data.as_object() {
+                Some(module_data) => {
+                    let title = get_data_field_as_str(module_data, TITLE)?;
+                    let description = get_data_field_as_str(module_data, DESCRIPTION)?;
+                    let source = get_data_field_as_str(module_data, SOURCE)?;
+                    todo!()
+                }
+                None => Err(ModuleError::NotAnObject(fs_module_data)),
+            },
+            Err(e) => Err(ModuleError::UnableToGetRequiredData(e.into())),
+        }
+    }
+}
+
+fn get_data_field_as_str(data: &Map<String, Value>, field: &str) -> Result<String, ModuleError> {
+    match data.get(field) {
+        Some(value) => match value.as_str() {
+            Some(str) => Ok(str.to_string()),
+            None => Err(ModuleError::IncompatibleFieldType(value.clone().into())),
+        },
+        None => Err(ModuleError::MissingRequired(field.into())),
     }
 }
