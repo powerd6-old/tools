@@ -5,7 +5,6 @@ use serde_json::Value;
 use crate::{EntryData, FileSystemDataError};
 
 impl EntryData for Entry {
-    // TODO: implement tests
     fn try_get_data(&self) -> Result<Value, FileSystemDataError> {
         match self {
             Entry::File(file) => file
@@ -55,5 +54,89 @@ impl EntryData for Entry {
                 Err(e) => Err(FileSystemDataError::UnableToReadFile(e.into())),
             },
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use path_utils::{create_test_directory, create_test_file};
+    use pretty_assertions::assert_eq;
+    use serde_json::json;
+    use testdir::testdir;
+
+    #[test]
+    fn file_gets_parsed_and_returned() {
+        let dir = testdir!();
+
+        let file = create_test_file(&dir.join("a.json"), r#"{"a":1}"#);
+
+        assert_eq!(
+            Entry::File(file).try_get_data().unwrap(),
+            json!({
+                "a": 1
+            })
+        )
+    }
+
+    #[test]
+    fn directory_uses_extra_files_as_new_keys() {
+        let dir = testdir!();
+
+        let root_file = create_test_file(
+            &dir.join("_.json"),
+            r#"{
+            "a": 1,
+            "b": 0
+        }"#,
+        );
+        let extra_file = create_test_file(&dir.join("b.txt"), "test");
+
+        assert_eq!(
+            Entry::Directory {
+                root_file,
+                extra_files: vec![extra_file]
+            }
+            .try_get_data()
+            .unwrap(),
+            json!({
+                "a": 1,
+                "b": "test"
+            })
+        )
+    }
+
+    #[test]
+    fn rendering_directory_uses_extra_files_as_new_keys() {
+        let dir = testdir!();
+
+        let root_file = create_test_file(
+            &dir.join("_.json"),
+            r#"{
+            "a": 1,
+            "b": 0
+        }"#,
+        );
+        let extra_file = create_test_file(&dir.join("b.txt"), "test");
+        let rendering_dir = create_test_directory(&dir.join("rendering"));
+        let rendering_file = create_test_file(&rendering_dir.join("md.hjs"), "");
+
+        assert_eq!(
+            Entry::RenderingDirectory {
+                root_file,
+                extra_files: vec![extra_file],
+                rendering_files: vec![rendering_file]
+            }
+            .try_get_data()
+            .unwrap(),
+            json!({
+                "a": 1,
+                "b": "test",
+                "rendering": {
+                    "md": ""
+                }
+            })
+        )
     }
 }
