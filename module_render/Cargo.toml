@@ -1,0 +1,16 @@
+[package]
+name = "module_render"
+description = "Mechanisms to render Module contents and types."
+version = "0.1.0"
+edition = { workspace = true }
+
+[dependencies]
+handlebars = { workspace = true }
+module = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+path_utils = { workspace = true }
+testdir = { workspace = true }
+pretty_assertions = { workspace = true }
