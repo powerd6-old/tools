@@ -6,7 +6,7 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum ModuleError {
     #[error("received a value that was not an object")]
-    NotAnObject(Value),
+    NotAnObject(Box<Value>),
     #[error("unable to get the data for a required field")]
     UnableToGetRequiredData(#[source] Box<dyn Error>),
     #[error("a required field was missing")]
