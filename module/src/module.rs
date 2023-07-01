@@ -29,37 +29,34 @@ pub struct Module {
 }
 
 impl Module {
-    /// Inserts a new key-value pair for String,ModuleType into the Module.
+    /// Extends the module with the provided types.
     ///
-    /// This initialized the types property of the module if it was empty.
-    ///
-    /// If another value was already present in the Module for this identifier, it's value is returned by this function.
-    fn add_or_replace_type(
-        &mut self,
-        identifier: String,
-        module_type: ModuleType,
-    ) -> Option<ModuleType> {
+    /// If the Module does not already have types, then the provided types will simply be assigned.
+    /// Otherwise, the provided types will be added, replacing the existing types when the identifiers match.
+    fn extend_types(&mut self, mut extra_types: BTreeMap<String, ModuleType>) {
         if self.types.is_none() {
-            self.types = Some(BTreeMap::new())
+            self.types = Some(extra_types)
+        } else {
+            self.types
+                .as_mut()
+                .expect("Module should have types at this point")
+                .append(&mut extra_types);
         }
-        self.types
-            .as_mut()
-            .expect("Module types should always exist at this point")
-            .insert(identifier, module_type)
     }
-    /// Inserts a new key-value pair for String,JsonMap into the Module.
+
+    /// Extends the module with the provided contents.
     ///
-    /// This initialized the contents property of the module if it was empty.
-    ///
-    /// If another value was already present in the Module for this identifier, it's value is returned by this function.
-    fn add_or_replace_content(&mut self, identifier: String, content: JsonMap) -> Option<JsonMap> {
+    /// If the Module does not already have contents, then the provided types will simply be assigned.
+    /// Otherwise, the provided contents will be added, replacing the existing contents when the identifiers match.
+    fn extend_contents(&mut self, mut extra_contents: BTreeMap<String, JsonMap>) {
         if self.contents.is_none() {
-            self.contents = Some(BTreeMap::new())
+            self.contents = Some(extra_contents)
+        } else {
+            self.contents
+                .as_mut()
+                .expect("Module should have contents at this point")
+                .append(&mut extra_contents);
         }
-        self.contents
-            .as_mut()
-            .expect("Module contents should always exist at this point")
-            .insert(identifier, content)
     }
 }
 
@@ -67,32 +64,15 @@ impl Module {
 impl TryFrom<FileSystem> for Module {
     type Error = ModuleError;
 
-    #[instrument(skip(filesystem))]
     fn try_from(filesystem: FileSystem) -> Result<Module, ModuleError> {
         match filesystem.module.try_get_data() {
             Ok(module_data) => match serde_json::from_value::<Module>(module_data.clone()) {
                 Ok(module) => {
                     let mut result = module;
-                    if let Some(fs_types) = filesystem.types {
-                        info!("Loading types from file system");
-                        for type_entry in fs_types.entries.iter() {
-                            let identifier = get_identifier_from(type_entry, &fs_types)?;
-                            let module_type = ModuleType::try_from(type_entry.clone())?;
-                            result.add_or_replace_type(identifier, module_type);
-                        }
-                    }
-                    if let Some(fs_contents) = filesystem.contents {
-                        info!("Loading contents from file system");
-                        for content_entry in fs_contents.entries.iter() {
-                            let identifier = get_identifier_from(content_entry, &fs_contents)?;
-                            let content_data = content_entry
-                                .try_get_data()
-                                .map_err(|e| ModuleError::UnableToGetRequiredData(e.into()))?;
-                            let module_content = serde_json::from_value(content_data.clone())
-                                .or(Err(ModuleError::IncompatibleFieldType(content_data.into())))?;
-                            result.add_or_replace_content(identifier, module_content);
-                        }
-                    }
+                    let fs_types = try_populate_types_from_filesystem(&filesystem)?;
+                    result.extend_types(fs_types);
+                    let fs_contents = try_populate_contents_from_filesystem(filesystem)?;
+                    result.extend_contents(fs_contents);
                     Ok(result)
                 }
                 Err(_e) => Err(ModuleError::IncompatibleFieldType(module_data.into())),
@@ -102,25 +82,50 @@ impl TryFrom<FileSystem> for Module {
     }
 }
 
-// TODO: Move this function to another module?
-fn get_identifier_from(type_entry: &Entry, fs_types: &EntrySet) -> Result<String, ModuleError> {
-    let entry_path = match type_entry {
-        Entry::File(file) => file,
-        Entry::Directory {
-            root_file,
-            extra_files: _,
-        } => root_file,
-        Entry::RenderingDirectory {
-            root_file,
-            extra_files: _,
-            rendering_files: _,
-        } => root_file,
-    };
-    entry_path
-        .clone()
-        .get_id_from_path(&fs_types.base_path)
-        .ok_or(ModuleError::InvalidIdentifier(
-            entry_path.to_path_buf(),
-            fs_types.base_path.clone(),
-        ))
+fn try_populate_types_from_filesystem(
+    filesystem: &FileSystem,
+) -> Result<BTreeMap<String, ModuleType>, ModuleError> {
+    let mut result: BTreeMap<String, ModuleType> = BTreeMap::new();
+    if let Some(fs_types) = &filesystem.types {
+        info!("Loading types from file system");
+        for type_entry in fs_types.entries.iter() {
+            match &fs_types.get_identifier_for_entry(type_entry) {
+                Some(identifier) => {
+                    let module_type = ModuleType::try_from(type_entry.clone())?;
+                    result.insert(identifier.to_string(), module_type);
+                }
+                None => {
+                    return Err(ModuleError::InvalidIdentifier(Box::new(type_entry.clone())));
+                }
+            }
+        }
+    }
+    Ok(result)
+}
+
+fn try_populate_contents_from_filesystem(
+    filesystem: FileSystem,
+) -> Result<BTreeMap<String, JsonMap>, ModuleError> {
+    let mut result: BTreeMap<String, JsonMap> = BTreeMap::new();
+    if let Some(fs_contents) = filesystem.contents {
+        info!("Loading contents from file system");
+        for content_entry in fs_contents.entries.iter() {
+            match &fs_contents.get_identifier_for_entry(content_entry) {
+                Some(identifier) => {
+                    let content_data = content_entry
+                        .try_get_data()
+                        .map_err(|e| ModuleError::UnableToGetRequiredData(e.into()))?;
+                    let module_content = serde_json::from_value(content_data.clone())
+                        .or(Err(ModuleError::IncompatibleFieldType(content_data.into())))?;
+                    result.insert(identifier.to_string(), module_content);
+                }
+                None => {
+                    return Err(ModuleError::InvalidIdentifier(Box::new(
+                        content_entry.clone(),
+                    )));
+                }
+            }
+        }
+    }
+    Ok(result)
 }

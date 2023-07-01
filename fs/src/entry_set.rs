@@ -1,4 +1,4 @@
-use path_utils::{children::ChildrenPaths, name::NamePaths};
+use path_utils::{children::ChildrenPaths, identifier::IdentifierPaths, name::NamePaths};
 use tracing::{debug, error, instrument};
 
 use crate::{
@@ -25,6 +25,22 @@ impl EntrySet {
     fn extend_entries(&mut self, extension: EntrySet) -> &Self {
         self.entries.extend(extension.entries);
         self
+    }
+    /// Returns an identifier for an Entry that is inside the EntrySet
+    pub fn get_identifier_for_entry(&self, entry: &Entry) -> Option<String> {
+        let entry_path = match entry {
+            Entry::File(file) => file,
+            Entry::Directory {
+                root_file,
+                extra_files: _,
+            } => root_file,
+            Entry::RenderingDirectory {
+                root_file,
+                extra_files: _,
+                rendering_files: _,
+            } => root_file,
+        };
+        entry_path.get_id_from_path(&self.base_path)
     }
 }
 
