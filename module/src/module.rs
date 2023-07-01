@@ -1,6 +1,6 @@
-use fs::{entry::Entry, entry_set::EntrySet, file_system::FileSystem};
+use fs::file_system::FileSystem;
 use fs_data::EntryData;
-use path_utils::identifier::IdentifierPaths;
+
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use tracing::{info, instrument};
@@ -64,6 +64,7 @@ impl Module {
 impl TryFrom<FileSystem> for Module {
     type Error = ModuleError;
 
+    #[instrument(skip(filesystem))]
     fn try_from(filesystem: FileSystem) -> Result<Module, ModuleError> {
         match filesystem.module.try_get_data() {
             Ok(module_data) => match serde_json::from_value::<Module>(module_data.clone()) {
