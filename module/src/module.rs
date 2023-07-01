@@ -12,7 +12,7 @@ use crate::{module_type::ModuleType, JsonMap, ModuleError};
 ///
 /// While this object does not perform validation on it's own,
 /// it creates an uniform structure to do so.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Module {
     /// The title of the module.
     title: String,
@@ -22,7 +22,7 @@ pub struct Module {
     source: Url,
     /// A collection of types that are defined in this module.
     #[serde(skip_serializing_if = "Option::is_none")]
-    types: Option<BTreeMap<String, ModuleType>>,
+    pub types: Option<BTreeMap<String, ModuleType>>,
     /// A collection of contents defined in this module, the keys of the map are the unique identifiers of the content pieces.
     #[serde(skip_serializing_if = "Option::is_none")]
     contents: Option<BTreeMap<String, JsonMap>>,
