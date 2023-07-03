@@ -25,7 +25,7 @@ pub struct Module {
     pub types: Option<BTreeMap<String, ModuleType>>,
     /// A collection of contents defined in this module, the keys of the map are the unique identifiers of the content pieces.
     #[serde(skip_serializing_if = "Option::is_none")]
-    contents: Option<BTreeMap<String, JsonMap>>,
+    pub contents: Option<BTreeMap<String, JsonMap>>,
 }
 
 impl Module {
