@@ -9,9 +9,9 @@ impl FileTypeDataReader for Yaml {
             Ok(file) => {
                 let reader = BufReader::new(file);
                 serde_yaml::from_reader(reader)
-                    .map_err(|e| FileDataError::InvalidFileContents(e.into()))
+                    .map_err(|e| FileDataError::InvalidFileContents(path.into(), e.into()))
             }
-            Err(e) => Err(FileDataError::UnableToOpenFile(e.into())),
+            Err(e) => Err(FileDataError::UnableToOpenFile(path.into(), e.into())),
         }
     }
 }

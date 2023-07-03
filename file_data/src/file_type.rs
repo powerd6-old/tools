@@ -5,6 +5,11 @@ use std::{ffi::OsStr, ops::Deref, path::Path};
 use strum_macros::{EnumString, EnumVariantNames};
 use tracing::instrument;
 
+/// The list of valid file types.
+///
+/// These are not necessarily mapped to file formats or extensions, instead,
+/// they refer to the mechanism related to reading, parsing, and de/serializing
+/// it's contents into valid [JSON Value](serde_json::Value).
 #[derive(Debug, EnumString, EnumVariantNames)]
 pub enum FileType {
     JSON,
@@ -15,8 +20,10 @@ pub enum FileType {
 }
 
 impl FileType {
+    /// Allows a specific file format to be read, choosing the correct
+    /// corresponding implementation.
     #[instrument]
-    pub fn try_read_file(&self, path: &Path) -> Result<Value, FileDataError> {
+    pub(crate) fn try_read_file(&self, path: &Path) -> Result<Value, FileDataError> {
         match self {
             FileType::JSON => Json::try_read_file(path),
             FileType::YAML => Yaml::try_read_file(path),
@@ -25,6 +32,7 @@ impl FileType {
     }
 }
 
+/// Allows files to be read into [JSON Value](serde_json::Value).
 pub trait FileDataType {
     /// Attempts to identify the FileType
     fn try_get_file_type(&self) -> Result<FileType, FileDataError>;
