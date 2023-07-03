@@ -4,10 +4,15 @@ use children::ChildrenPaths;
 use identifier::IdentifierPaths;
 use name::NamePaths;
 
+/// Encapsulates functionality to handle children [Paths](Path).
 pub mod children;
+/// Encapsulates functionality to handle creating (probably) unique identifiers
+/// from [Paths](Path).
 pub mod identifier;
+/// Encapsulates functionality to detect and search for specific named [Paths](Path).
 pub mod name;
 
+/// A single trait that implements all the helpers contained in this crate.
 pub trait PathUtils: ChildrenPaths + IdentifierPaths + NamePaths {}
 
 /// Writes a file into the `path` with the given contents.

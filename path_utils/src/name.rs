@@ -2,10 +2,11 @@ use std::{fmt::Debug, ops::Deref, path::Path};
 
 use tracing::{debug, instrument};
 
+/// Detect and search for specific named [Paths](Path).
 pub trait NamePaths {
-    /// Checks if a file has a certain name, regardless of it's extension
+    /// Checks if a file has a certain name, regardless of it's extension.
     fn is_named(&self, file_name: &str) -> bool;
-    /// Gets the file or directory name, excluding any file extension
+    /// Gets the file or directory name, excluding any file extension.
     fn get_name_without_extension(&self) -> String;
 }
 

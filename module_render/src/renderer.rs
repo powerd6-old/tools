@@ -6,7 +6,7 @@ use serde_json::Value;
 
 use crate::{RenderingError, TYPE_KEY};
 
-/// The object responsible for rendering content of a module.
+/// The object responsible for rendering content of a [Module](module::module::Module).
 ///
 /// It holds the compiled templates and helpers for the module,
 /// and exposes a simpler interface to render contents with a specific format.
@@ -16,6 +16,10 @@ pub struct ModuleRenderer<'handlebars> {
 }
 
 impl ModuleRenderer<'_> {
+    /// Renders a content with a registered template.
+    ///
+    /// It injects a `self` property with the content, and a `module` property
+    /// with the entire module contents.
     pub fn render(
         &self,
         content: &BTreeMap<String, Value>,
@@ -41,4 +45,5 @@ impl ModuleRenderer<'_> {
     }
 }
 
+/// A collection of [Handlebars helpers](https://handlebarsjs.com/guide/#custom-helpers).
 pub mod helpers;

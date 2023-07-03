@@ -7,8 +7,10 @@ use crate::{
     RenderingError,
 };
 
+/// Defines how a [Module] can be rendered.
 pub trait RenderableModule {
-    /// Uses the stored information to create a ModuleRenderer that holds all necessary information required to render content.
+    /// Uses the stored information to create a ModuleRenderer that holds all
+    /// necessary information required to render content.
     fn get_renderer(&self) -> Result<ModuleRenderer, RenderingError>;
 }
 
@@ -30,7 +32,13 @@ impl RenderableModule for Module {
                                     &format!("{}_{}", type_key, format),
                                     template,
                                 )
-                                .map_err(|e| RenderingError::FailedToRegisterTemplate(e.into()))?;
+                                .map_err(|e| {
+                                    RenderingError::FailedToRegisterTemplate(
+                                        type_key.to_string(),
+                                        format.to_string(),
+                                        e.into(),
+                                    )
+                                })?;
                         }
                     } else {
                         warn!("Type `{}` does not have rendering templates", type_key);

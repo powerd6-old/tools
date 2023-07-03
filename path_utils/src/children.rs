@@ -4,10 +4,14 @@ use std::{
 };
 
 use crate::name::NamePaths;
+
+/// Handle children [Paths](Path).
 pub trait ChildrenPaths {
-    /// A helper function that maps all objects inside a directory into a `PathBuf` iterator
+    /// A helper function that maps all objects inside a directory into a
+    /// [PathBuf] iterator.
     fn get_children(&self) -> Vec<PathBuf>;
-    /// Finds the first file (ordered alphabetically) in a directory with a specific filename, regardless of it's extension
+    /// Finds the first file (ordered alphabetically) in a directory with a
+    /// specific filename, regardless of it's extension.
     fn get_first_child_named(&self, name: &str) -> Option<PathBuf>;
 }
 

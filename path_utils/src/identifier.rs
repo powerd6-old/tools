@@ -9,8 +9,10 @@ use tracing::{debug, instrument};
 
 use crate::name::NamePaths;
 
+/// Handle creating (probably) unique identifiers from [Paths](Path).
 pub trait IdentifierPaths {
-    /// Returns a String identifier for a path, using the relative path between it and a base path
+    /// Returns a [String] identifier for a [Path], using the relative path
+    /// between it and a base [Path].
     fn get_id_from_path(&self, base: &Path) -> Option<String>;
 }
 
