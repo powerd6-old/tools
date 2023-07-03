@@ -137,18 +137,23 @@ fn try_populate_contents_from_filesystem(
 #[cfg(test)]
 mod tests {
 
+    use crate::TYPES;
+
     use super::*;
+    use fs::CONTENTS_DIRECTORY;
+    use fs::TYPES_DIRECTORY;
     use path_utils::create_test_directory;
     use path_utils::create_test_file;
     use pretty_assertions::assert_eq;
     use serde_json::json;
+    use serde_json::Value;
     use testdir::testdir;
 
     #[test]
     fn works_with_only_mandatory_files() {
         let dir = testdir!();
 
-        let module_file = create_test_file(
+        create_test_file(
             &dir.join("module.json"),
             r#"{
             "title": "My title",
@@ -157,15 +162,8 @@ mod tests {
         }"#,
         );
 
-        let file_system = FileSystem {
-            root_directory: dir,
-            module: fs::entry::Entry::File(module_file),
-            types: None,
-            contents: None,
-        };
-
         assert_eq!(
-            Module::try_from(file_system).unwrap(),
+            Module::try_from(FileSystem::try_from(dir).unwrap()).unwrap(),
             Module {
                 title: "My title".to_string(),
                 description: "My description".to_string(),
@@ -177,70 +175,63 @@ mod tests {
     }
 
     #[test]
-    fn types_are_populated_from_file_system() {
-        let dir = testdir!();
-
-        let file_system = FileSystem {
-            root_directory: dir,
-            module: todo!(),
-            types: todo!(),
-            contents: todo!(),
-        };
-
-        assert_eq!(
-            Module::try_from(file_system).unwrap(),
-            Module {
-                title: todo!(),
-                description: todo!(),
-                source: todo!(),
-                types: todo!(),
-                contents: todo!()
-            }
-        )
-    }
-
-    #[test]
     fn types_are_populated_from_file_system_and_overwrite_types_from_module() {
         let dir = testdir!();
 
-        let file_system = FileSystem {
-            root_directory: dir,
-            module: todo!(),
-            types: todo!(),
-            contents: todo!(),
-        };
+        create_test_file(
+            &dir.join("module.json"),
+            r#"{
+                "title": "My title",
+                "description": "My description",
+                "source": "https://powerd6.org",
+                "types": {
+                    "a": {
+                        "description": "my type"
+                    }
+                }
+            }"#,
+        );
+
+        let types_directory = create_test_directory(&dir.join(TYPES_DIRECTORY));
+
+        create_test_file(
+            &types_directory.join("a.json"),
+            r#"{
+            "description": "my replaced type"
+        }"#,
+        );
+        create_test_file(
+            &types_directory.join("b.json"),
+            r#"{
+            "description": "my new type"
+        }"#,
+        );
 
         assert_eq!(
-            Module::try_from(file_system).unwrap(),
+            Module::try_from(FileSystem::try_from(dir).unwrap()).unwrap(),
             Module {
-                title: todo!(),
-                description: todo!(),
-                source: todo!(),
-                types: todo!(),
-                contents: todo!()
-            }
-        )
-    }
-
-    #[test]
-    fn contents_are_populated_from_file_system() {
-        let dir = testdir!();
-
-        let file_system = FileSystem {
-            root_directory: dir,
-            module: todo!(),
-            types: todo!(),
-            contents: todo!(),
-        };
-
-        assert_eq!(
-            Module::try_from(file_system).unwrap(),
-            Module {
-                title: todo!(),
-                description: todo!(),
-                source: todo!(),
-                types: todo!(),
-                contents: todo!()
+                title: "My title".to_string(),
+                description: "My description".to_string(),
+                source: Url::parse("https://powerd6.org").unwrap(),
+                types: Some(BTreeMap::from([
+                    (
+                        "a".to_string(),
+                        ModuleType {
+                            description: "my replaced type".to_string(),
+                            schema: None,
+                            rendering: None
+                        }
+                    ),
+                    (
+                        "b".to_string(),
+                        ModuleType {
+                            description: "my new type".to_string(),
+                            schema: None,
+                            rendering: None
+                        }
+                    )
+                ])),
+                contents: None
             }
         )
     }
@@ -249,21 +240,55 @@ mod tests {
     fn contents_are_populated_from_file_system_and_overwrite_contents_from_module() {
         let dir = testdir!();
 
-        let file_system = FileSystem {
-            root_directory: dir,
-            module: todo!(),
-            types: todo!(),
-            contents: todo!(),
-        };
+        create_test_file(
+            &dir.join("module.json"),
+            r#"{
+                "title": "My title",
+                "description": "My description",
+                "source": "https://powerd6.org",
+                "contents": {
+                    "a": {
+                        "key": "value"
+                    }
+                }
+            }"#,
+        );
+
+        let contents_directory = create_test_directory(&dir.join(CONTENTS_DIRECTORY));
+
+        create_test_file(
+            &contents_directory.join("a.json"),
+            r#"{
+            "key": "replaced value"
+        }"#,
+        );
+        create_test_file(
+            &contents_directory.join("b.json"),
+            r#"{
+            "key": "value"
+        }"#,
+        );
 
         assert_eq!(
-            Module::try_from(file_system).unwrap(),
+            Module::try_from(FileSystem::try_from(dir).unwrap()).unwrap(),
             Module {
-                title: todo!(),
-                description: todo!(),
-                source: todo!(),
-                types: todo!(),
-                contents: todo!()
+                title: "My title".to_string(),
+                description: "My description".to_string(),
+                source: Url::parse("https://powerd6.org").unwrap(),
+                types: None,
+                contents: Some(BTreeMap::from([
+                    (
+                        "a".to_string(),
+                        BTreeMap::from([(
+                            "key".to_string(),
+                            Value::String("replaced value".to_string())
+                        )])
+                    ),
+                    (
+                        "b".to_string(),
+                        BTreeMap::from([("key".to_string(), Value::String("value".to_string()))])
+                    )
+                ]))
             }
         )
     }

@@ -12,10 +12,10 @@ use crate::ModuleError;
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct ModuleType {
     /// The human-readable description of what the type represents.
-    description: String,
+    pub description: String,
     /// The json-schema used to validate the type.
     #[serde(skip_serializing_if = "Option::is_none")]
-    schema: Option<Value>,
+    pub schema: Option<Value>,
     /// The rendering code for all the supported formats.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rendering: Option<BTreeMap<String, String>>,
