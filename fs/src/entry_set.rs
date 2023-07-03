@@ -45,6 +45,7 @@ impl EntrySet {
     }
 }
 
+/// Allow easier creation of [EntrySets](EntrySet) from [Paths](Path).
 pub trait EntrySetFromPath {
     /// Create an EntrySet from a file or directory inside the path.
     ///

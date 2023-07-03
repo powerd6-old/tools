@@ -21,6 +21,9 @@ pub const RENDERING_DIRECTORY: &str = "rendering";
 /// The name of the directory that contains the contents.
 pub const CONTENTS_DIRECTORY: &str = "contents";
 
+/// Represents a single file system [Entry].
 pub mod entry;
+/// Represent a group of [Entries](Entry) with a common (nested) root.
 pub mod entry_set;
+/// Represents a Module layout in the filesystem.
 pub mod file_system;
