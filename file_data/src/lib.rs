@@ -3,11 +3,12 @@ use serde_json::Value;
 use std::error::Error;
 use std::{ops::Deref, path::Path};
 use strum::VariantNames;
+use strum_macros::EnumIs;
 use thiserror::Error;
 use tracing::instrument;
 
 /// The errors that can happen when reading a file into data.
-#[derive(Error, Debug)]
+#[derive(Error, Debug, EnumIs)]
 pub enum FileDataError {
     #[error(
         "unsupported file type `{0}` (expected one of {:?})",

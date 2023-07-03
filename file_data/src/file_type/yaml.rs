@@ -26,10 +26,39 @@ mod tests {
     use testdir::testdir;
 
     #[test]
+    fn fails_on_invalid_paths() {
+        let dir = testdir!();
+
+        let inexistent_file = &dir.join("fake.yaml");
+
+        assert!(Yaml::try_read_file(inexistent_file)
+            .unwrap_err()
+            .is_unable_to_open_file());
+    }
+
+    #[test]
+    fn fails_on_invalid_yaml() {
+        let dir = testdir!();
+
+        // YAML does not allow duplicate keys.
+        let invalid_file = create_test_file(
+            &dir.join("a.yaml"),
+            r#"
+        a:
+  a: 1
+  a: 2"#,
+        );
+
+        assert!(Yaml::try_read_file(&invalid_file)
+            .unwrap_err()
+            .is_invalid_file_contents());
+    }
+
+    #[test]
     fn valid_yaml_becomes_valid_json() {
         let dir = testdir!();
 
-        let yaml = create_test_file(
+        let sample_file = create_test_file(
             &dir.join("file.yaml"),
             r#"
         # comment
@@ -52,7 +81,7 @@ mod tests {
         );
 
         assert_eq!(
-            Yaml::try_read_file(&yaml).unwrap(),
+            Yaml::try_read_file(&sample_file).unwrap(),
             json!({
               "key": "value",
               "integerValue": 1,
