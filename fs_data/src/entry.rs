@@ -9,9 +9,9 @@ impl EntryData for Entry {
     #[instrument]
     fn try_get_data(&self) -> Result<Value, FileSystemDataError> {
         match self {
-            Entry::File(file) => file
-                .try_read_file()
-                .map_err(|e| FileSystemDataError::UnableToReadFile(e.into())),
+            Entry::File(file) => file.try_read_file().map_err(|e| {
+                FileSystemDataError::UnableToReadFile(file.clone().into_boxed_path(), e.into())
+            }),
             Entry::Directory {
                 root_file,
                 extra_files,
@@ -30,7 +30,10 @@ impl EntryData for Entry {
                         Err(FileSystemDataError::UnableToExtendRootFile)
                     }
                 }
-                Err(e) => Err(FileSystemDataError::UnableToReadFile(e.into())),
+                Err(e) => Err(FileSystemDataError::UnableToReadFile(
+                    root_file.clone().into_boxed_path(),
+                    e.into(),
+                )),
             },
             Entry::RenderingDirectory {
                 root_file,
@@ -53,7 +56,10 @@ impl EntryData for Entry {
                         Err(FileSystemDataError::UnableToExtendRootFile)
                     }
                 }
-                Err(e) => Err(FileSystemDataError::UnableToReadFile(e.into())),
+                Err(e) => Err(FileSystemDataError::UnableToReadFile(
+                    root_file.clone().into_boxed_path(),
+                    e.into(),
+                )),
             },
         }
     }

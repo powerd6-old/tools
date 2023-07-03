@@ -14,7 +14,12 @@ impl EntryData for Vec<PathBuf> {
                 Ok(value) => {
                     result.insert(file.get_name_without_extension(), value);
                 }
-                Err(e) => return Err(FileSystemDataError::UnableToReadFile(e.into())),
+                Err(e) => {
+                    return Err(FileSystemDataError::UnableToReadFile(
+                        file.clone().into_boxed_path(),
+                        e.into(),
+                    ))
+                }
             }
         }
         serde_json::to_value(result)

@@ -1,5 +1,5 @@
 use serde_json::Value;
-use std::error::Error;
+use std::{error::Error, path::Path};
 use thiserror::Error;
 
 /// The errors that can happen when reading data from an Entry.
@@ -9,8 +9,8 @@ pub enum FileSystemDataError {
         "the underscore file is not a valid object, and therefore can't be extended with extra files"
     )]
     UnableToExtendRootFile,
-    #[error("unable to read the file")]
-    UnableToReadFile(#[source] Box<dyn Error>),
+    #[error("unable to read the file `{0}`")]
+    UnableToReadFile(Box<Path>, #[source] Box<dyn Error>),
     #[error("unable to serialize the result")]
     UnableToSerializeResult(#[source] Box<dyn Error>),
 }
