@@ -13,13 +13,14 @@ use clap::{Parser, Subcommand};
 use render::RenderArguments;
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
+/// The entry point of the CLI execution.
 fn main() -> Result<(), Box<dyn Error>> {
-    // Initialize tracing subscriber
+    // Initialize tracing subscriber.
     let subscriber = FmtSubscriber::builder()
         .with_env_filter(EnvFilter::from_default_env())
         .finish();
     tracing::subscriber::set_global_default(subscriber)
-        .expect("Setting up a default tracing subscriber should always succeed");
+        .expect("Setting up a default tracing subscriber should always succeed.");
 
     let args = Cli::parse();
 
@@ -29,7 +30,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 }
 
-/// A CLI to help build powerd6 modules
+/// A CLI to help build powerd6 modules.
 #[derive(Debug, Parser)]
 #[command(name = "powerd6_cli", version, about)]
 struct Cli {
@@ -37,11 +38,14 @@ struct Cli {
     command: Commands,
 }
 
+/// The supported commands from the CLI.
 #[derive(Debug, Subcommand)]
 enum Commands {
     Build(BuildArguments),
     Render(RenderArguments),
 }
 
+/// Implements the [Build](crate::Commands::Build) command.
 pub mod build;
+/// Implements the [Render](crate::Commands::Render) command.
 pub mod render;
