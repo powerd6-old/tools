@@ -11,7 +11,7 @@ use crate::{RenderingError, TYPE_KEY};
 /// It holds the compiled templates and helpers for the module,
 /// and exposes a simpler interface to render contents with a specific format.
 pub struct ModuleRenderer<'handlebars> {
-    pub(crate) module: Module,
+    pub module: Module,
     pub(crate) renderer: Handlebars<'handlebars>,
 }
 

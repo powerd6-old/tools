@@ -1,6 +1,7 @@
 extern crate clap;
 extern crate fs;
 extern crate module;
+extern crate module_render;
 extern crate tracing;
 extern crate tracing_subscriber;
 
