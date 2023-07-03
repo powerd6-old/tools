@@ -4,7 +4,7 @@ use thiserror::Error;
 /// The errors that can happen when reading a file into data
 #[derive(Error, Debug, PartialEq)]
 pub enum FileSystemError {
-    #[error("expected directory but found a file instead")]
+    #[error("expected directory but found a file instead `{0}`")]
     ExpectedDirectory(Box<Path>),
     #[error("missing required entry {0}")]
     MissingRequiredEntry(String),
