@@ -12,7 +12,6 @@ use module_render::renderer::ModuleRenderer;
 
 use self::thiserror::Error;
 use module::module::Module;
-use std::collections::HashMap;
 use std::error::Error;
 use std::io::BufReader;
 use std::io::Write;
