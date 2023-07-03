@@ -60,7 +60,6 @@ impl Module {
     }
 }
 
-// TODO: Implement tests
 impl TryFrom<FileSystem> for Module {
     type Error = ModuleError;
 
@@ -129,4 +128,29 @@ fn try_populate_contents_from_filesystem(
         }
     }
     Ok(result)
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use path_utils::create_test_file;
+    use pretty_assertions::assert_eq;
+    use serde_json::json;
+    use testdir::testdir;
+
+    #[test]
+    fn works_with_only_mandatory_files() {}
+
+    #[test]
+    fn types_are_populated_from_file_system() {}
+
+    #[test]
+    fn types_are_populated_from_file_system_and_overwrite_types_from_module() {}
+
+    #[test]
+    fn contents_are_populated_from_file_system() {}
+
+    #[test]
+    fn contents_are_populated_from_file_system_and_overwrite_contents_from_module() {}
 }
