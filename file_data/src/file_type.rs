@@ -56,3 +56,33 @@ impl<T: AsRef<Path>> FileDataType for T {
 pub(crate) mod json;
 pub(crate) mod text;
 pub(crate) mod yaml;
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use path_utils::create_test_file;
+    use testdir::testdir;
+
+    #[test]
+    fn fails_for_non_files() {
+        let dir = testdir!();
+
+        assert!(dir
+            .try_get_file_type()
+            .unwrap_err()
+            .is_unsupported_file_type())
+    }
+
+    #[test]
+    fn fails_for_unsupported_extensions() {
+        let dir = testdir!();
+
+        let abc = create_test_file(&dir.join("a.abc"), "");
+
+        assert!(abc
+            .try_get_file_type()
+            .unwrap_err()
+            .is_unsupported_file_type())
+    }
+}
