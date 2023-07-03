@@ -12,7 +12,7 @@ use crate::{module_type::ModuleType, JsonMap, ModuleError};
 ///
 /// While this object does not perform validation on it's own,
 /// it creates an uniform structure to do so.
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Module {
     /// The title of the module.
     title: String,
@@ -69,10 +69,12 @@ impl TryFrom<FileSystem> for Module {
             Ok(module_data) => match serde_json::from_value::<Module>(module_data.clone()) {
                 Ok(module) => {
                     let mut result = module;
-                    let fs_types = try_populate_types_from_filesystem(&filesystem)?;
-                    result.extend_types(fs_types);
-                    let fs_contents = try_populate_contents_from_filesystem(filesystem)?;
-                    result.extend_contents(fs_contents);
+                    if let Some(fs_types) = try_populate_types_from_filesystem(&filesystem)? {
+                        result.extend_types(fs_types)
+                    }
+                    if let Some(fs_contents) = try_populate_contents_from_filesystem(&filesystem)? {
+                        result.extend_contents(fs_contents)
+                    }
                     Ok(result)
                 }
                 Err(_e) => Err(ModuleError::IncompatibleFieldType(module_data.into())),
@@ -84,9 +86,9 @@ impl TryFrom<FileSystem> for Module {
 
 fn try_populate_types_from_filesystem(
     filesystem: &FileSystem,
-) -> Result<BTreeMap<String, ModuleType>, ModuleError> {
-    let mut result: BTreeMap<String, ModuleType> = BTreeMap::new();
+) -> Result<Option<BTreeMap<String, ModuleType>>, ModuleError> {
     if let Some(fs_types) = &filesystem.types {
+        let mut result: BTreeMap<String, ModuleType> = BTreeMap::new();
         info!("Loading types from file system");
         for type_entry in fs_types.entries.iter() {
             match &fs_types.get_identifier_for_entry(type_entry) {
@@ -99,15 +101,16 @@ fn try_populate_types_from_filesystem(
                 }
             }
         }
+        return Ok(Some(result));
     }
-    Ok(result)
+    Ok(None)
 }
 
 fn try_populate_contents_from_filesystem(
-    filesystem: FileSystem,
-) -> Result<BTreeMap<String, JsonMap>, ModuleError> {
-    let mut result: BTreeMap<String, JsonMap> = BTreeMap::new();
-    if let Some(fs_contents) = filesystem.contents {
+    filesystem: &FileSystem,
+) -> Result<Option<BTreeMap<String, JsonMap>>, ModuleError> {
+    if let Some(fs_contents) = &filesystem.contents {
+        let mut result: BTreeMap<String, JsonMap> = BTreeMap::new();
         info!("Loading contents from file system");
         for content_entry in fs_contents.entries.iter() {
             match &fs_contents.get_identifier_for_entry(content_entry) {
@@ -126,31 +129,142 @@ fn try_populate_contents_from_filesystem(
                 }
             }
         }
+        return Ok(Some(result));
     }
-    Ok(result)
+    Ok(None)
 }
 
 #[cfg(test)]
 mod tests {
 
     use super::*;
+    use path_utils::create_test_directory;
     use path_utils::create_test_file;
     use pretty_assertions::assert_eq;
     use serde_json::json;
     use testdir::testdir;
 
     #[test]
-    fn works_with_only_mandatory_files() {}
+    fn works_with_only_mandatory_files() {
+        let dir = testdir!();
+
+        let module_file = create_test_file(
+            &dir.join("module.json"),
+            r#"{
+            "title": "My title",
+            "description": "My description",
+            "source": "https://powerd6.org"
+        }"#,
+        );
+
+        let file_system = FileSystem {
+            root_directory: dir,
+            module: fs::entry::Entry::File(module_file),
+            types: None,
+            contents: None,
+        };
+
+        assert_eq!(
+            Module::try_from(file_system).unwrap(),
+            Module {
+                title: "My title".to_string(),
+                description: "My description".to_string(),
+                source: Url::parse("https://powerd6.org").unwrap(),
+                types: None,
+                contents: None
+            }
+        )
+    }
 
     #[test]
-    fn types_are_populated_from_file_system() {}
+    fn types_are_populated_from_file_system() {
+        let dir = testdir!();
+
+        let file_system = FileSystem {
+            root_directory: dir,
+            module: todo!(),
+            types: todo!(),
+            contents: todo!(),
+        };
+
+        assert_eq!(
+            Module::try_from(file_system).unwrap(),
+            Module {
+                title: todo!(),
+                description: todo!(),
+                source: todo!(),
+                types: todo!(),
+                contents: todo!()
+            }
+        )
+    }
 
     #[test]
-    fn types_are_populated_from_file_system_and_overwrite_types_from_module() {}
+    fn types_are_populated_from_file_system_and_overwrite_types_from_module() {
+        let dir = testdir!();
+
+        let file_system = FileSystem {
+            root_directory: dir,
+            module: todo!(),
+            types: todo!(),
+            contents: todo!(),
+        };
+
+        assert_eq!(
+            Module::try_from(file_system).unwrap(),
+            Module {
+                title: todo!(),
+                description: todo!(),
+                source: todo!(),
+                types: todo!(),
+                contents: todo!()
+            }
+        )
+    }
 
     #[test]
-    fn contents_are_populated_from_file_system() {}
+    fn contents_are_populated_from_file_system() {
+        let dir = testdir!();
+
+        let file_system = FileSystem {
+            root_directory: dir,
+            module: todo!(),
+            types: todo!(),
+            contents: todo!(),
+        };
+
+        assert_eq!(
+            Module::try_from(file_system).unwrap(),
+            Module {
+                title: todo!(),
+                description: todo!(),
+                source: todo!(),
+                types: todo!(),
+                contents: todo!()
+            }
+        )
+    }
 
     #[test]
-    fn contents_are_populated_from_file_system_and_overwrite_contents_from_module() {}
+    fn contents_are_populated_from_file_system_and_overwrite_contents_from_module() {
+        let dir = testdir!();
+
+        let file_system = FileSystem {
+            root_directory: dir,
+            module: todo!(),
+            types: todo!(),
+            contents: todo!(),
+        };
+
+        assert_eq!(
+            Module::try_from(file_system).unwrap(),
+            Module {
+                title: todo!(),
+                description: todo!(),
+                source: todo!(),
+                types: todo!(),
+                contents: todo!()
+            }
+        )
+    }
 }

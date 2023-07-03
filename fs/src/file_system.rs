@@ -11,7 +11,7 @@ use std::path::PathBuf;
 #[derive(Debug, PartialEq)]
 pub struct FileSystem {
     /// The root directory this FileSystem was built from.
-    root_directory: PathBuf,
+    pub root_directory: PathBuf,
     // The module information
     pub module: Entry,
     // An optional set of entries that define types.
