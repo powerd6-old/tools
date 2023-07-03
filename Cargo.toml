@@ -17,7 +17,14 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
 
 [workspace]
-members = ["file_data", "fs", "fs_data", "module", "module_render", "path_utils"]
+members = [
+    "file_data",
+    "fs",
+    "fs_data",
+    "module",
+    "module_render",
+    "path_utils",
+]
 
 [workspace.package]
 edition = "2021"

@@ -1,10 +1,6 @@
 use handlebars::Handlebars;
 use module::module::Module;
-use std::{
-    collections::{BTreeMap, HashMap},
-    error::Error,
-    path::PathBuf,
-};
+use std::collections::HashMap;
 use thiserror::Error;
 use tracing::warn;
 
