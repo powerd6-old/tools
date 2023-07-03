@@ -23,7 +23,8 @@ pub struct Module {
     /// A collection of types that are defined in this module.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub types: Option<BTreeMap<String, ModuleType>>,
-    /// A collection of contents defined in this module, the keys of the map are the unique identifiers of the content pieces.
+    /// A collection of contents defined in this module,
+    /// the keys of the map are the unique identifiers of the content pieces.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub contents: Option<BTreeMap<String, JsonMap>>,
 }
@@ -31,8 +32,9 @@ pub struct Module {
 impl Module {
     /// Extends the module with the provided types.
     ///
-    /// If the Module does not already have types, then the provided types will simply be assigned.
-    /// Otherwise, the provided types will be added, replacing the existing types when the identifiers match.
+    /// If the Module does not already have types, then the provided types will
+    /// simply be assigned. Otherwise, the provided types will be added,
+    /// replacing the existing types when the identifiers match.
     fn extend_types(&mut self, mut extra_types: BTreeMap<String, ModuleType>) {
         if self.types.is_none() {
             self.types = Some(extra_types)
@@ -46,8 +48,9 @@ impl Module {
 
     /// Extends the module with the provided contents.
     ///
-    /// If the Module does not already have contents, then the provided types will simply be assigned.
-    /// Otherwise, the provided contents will be added, replacing the existing contents when the identifiers match.
+    /// If the Module does not already have contents, then the provided types
+    /// will simply be assigned. Otherwise, the provided contents will be added,
+    /// replacing the existing contents when the identifiers match.
     fn extend_contents(&mut self, mut extra_contents: BTreeMap<String, JsonMap>) {
         if self.contents.is_none() {
             self.contents = Some(extra_contents)
