@@ -18,28 +18,29 @@ use std::io::Write;
 use std::{ffi::OsString, fs::File, path::PathBuf};
 use tracing::{debug, error, info, instrument};
 
-/// Renders a module with a specific format
+/// Renders a module with a specific format.
 #[derive(Debug, Args)]
 #[command(arg_required_else_help = true)]
 pub struct RenderArguments {
-    /// The path to the module to be rendered
+    /// The path to the module to be rendered.
     #[arg(required = true)]
     source: PathBuf,
-    /// The name of the output file, without extension
+    /// The name of the output file, without extension.
     #[arg(short = 'o', long = "output", default_value = "module")]
     output_file_name: OsString,
-    /// The format that should be rendered
+    /// The format that should be rendered.
     #[arg(required = true)]
     format: String,
 }
 
-/// The errors that can happen when rendering a Module
+/// The errors that can happen when rendering a Module.
 #[derive(Error, Debug)]
 pub enum RenderError {
     #[error("found no contents in the module")]
     MissingContents,
 }
 
+/// Executes the [Render](crate::Commands::Render) command.
 pub fn run(
     RenderArguments {
         source,

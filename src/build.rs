@@ -11,17 +11,17 @@ use std::io::Write;
 use std::{convert::TryFrom, error::Error, ffi::OsString, fs::File, path::PathBuf};
 use tracing::{debug, info, instrument};
 
-/// Builds a module from files in your computer
+/// Builds a module from files in your computer.
 #[derive(Debug, Args)]
 #[command(arg_required_else_help = true)]
 pub struct BuildArguments {
-    /// The path to the directory that will be built
+    /// The path to the directory that will be built.
     #[arg(required = true)]
     source: PathBuf,
-    /// The name of the output file, without extension
+    /// The name of the output file, without extension.
     #[arg(short = 'o', long = "output", default_value = "module")]
     output_file_name: OsString,
-    /// What type of output should be generated
+    /// What type of output should be generated.
     #[arg(
             short = 't',
             long = "type",            
@@ -31,12 +31,16 @@ pub struct BuildArguments {
     output_type: OutputType,
 }
 
+/// The shape of the produced Module.
 #[derive(ValueEnum, Copy, Clone, Debug, PartialEq, Eq)]
 pub enum OutputType {
+    /// A more readable format of JSON, with spacing.
     Pretty,
+    /// A condensed, and therefore better for transfers, format of JSON.
     Minimized,
 }
 
+/// Executes the [Build](crate::Commands::Build) command.
 #[instrument]
 pub fn run(
     BuildArguments {
