@@ -77,7 +77,7 @@ fn render_contents(renderer: &ModuleRenderer, format: &String) -> Result<String,
                 result += &renderer.render(value, format)?;
                 result += "\n";
             }
-            todo!()
+            Ok(result)
         }
         None => {
             error!("No contents were present in the module");
