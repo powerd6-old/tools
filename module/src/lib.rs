@@ -6,13 +6,13 @@ use thiserror::Error;
 /// The errors that can happen when constructing a Module.
 #[derive(Error, Debug)]
 pub enum ModuleError {
-    #[error("received a value that was not an object")]
+    #[error("received a value that was not an object `{0:#?}`")]
     NotAnObject(Box<Value>),
     #[error("unable to get the data for a required field")]
     UnableToGetRequiredData(#[source] Box<dyn Error>),
-    #[error("a required field was missing")]
+    #[error("a required field `{0}` was missing")]
     MissingRequired(Box<str>),
-    #[error("the field is not of the expected type")]
+    #[error("the field is not of the expected type, instead found: `{0:#?}`")]
     IncompatibleFieldType(Box<Value>),
     #[error("Unable to create a valid identifier from entry: `{0:#?}`.")]
     InvalidIdentifier(Box<Entry>),
