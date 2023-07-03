@@ -137,15 +137,12 @@ fn try_populate_contents_from_filesystem(
 #[cfg(test)]
 mod tests {
 
-    use crate::TYPES;
-
     use super::*;
     use fs::CONTENTS_DIRECTORY;
     use fs::TYPES_DIRECTORY;
     use path_utils::create_test_directory;
     use path_utils::create_test_file;
     use pretty_assertions::assert_eq;
-    use serde_json::json;
     use serde_json::Value;
     use testdir::testdir;
 
