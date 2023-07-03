@@ -1,7 +1,7 @@
 use std::path::Path;
 use thiserror::Error;
 
-/// The errors that can happen when reading a file into data
+/// The errors that can happen when reading a file into data.
 #[derive(Error, Debug, PartialEq)]
 pub enum FileSystemError {
     #[error("expected directory but found a file instead `{0}`")]

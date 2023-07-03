@@ -30,9 +30,9 @@ pub enum Entry {
 }
 
 pub trait EntryFromNamedPath {
-    /// Create an Entry from a file or directory inside the path with a given name, if it exists
+    /// Create an Entry from a file or directory inside the path with a given name, if it exists.
     fn has_entry_named(&self, name: String) -> Option<Entry>;
-    /// Create an Entry from a file or directory
+    /// Create an Entry from a file or directory.
     fn to_entry(&self) -> Option<Entry>;
 }
 

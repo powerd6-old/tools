@@ -37,7 +37,7 @@ pub trait FileData {
 impl<T: AsRef<Path>> FileData for T {
     #[instrument(
         skip(self),
-        fields(path=self.deref().as_ref().to_str().expect("Path should be a valid UTF-8 String"))
+        fields(path=self.deref().as_ref().to_str().expect("Path should be a valid UTF-8 String."))
     )]
     fn try_read_file(&self) -> Result<Value, FileDataError> {
         let path: &Path = self.deref().as_ref();

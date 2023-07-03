@@ -12,7 +12,7 @@ use std::path::PathBuf;
 pub struct FileSystem {
     /// The root directory this FileSystem was built from.
     pub root_directory: PathBuf,
-    // The module information
+    // The module information.
     pub module: Entry,
     // An optional set of entries that define types.
     pub types: Option<EntrySet>,

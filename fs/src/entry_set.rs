@@ -10,7 +10,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
-/// A collection of Entries contained within a directory.
+/// A collection of [Entries](Entry) contained within a directory.
+///
 /// This structure does not represent the number of levels each entry is nested at.
 #[derive(Debug, PartialEq)]
 pub struct EntrySet {
@@ -26,7 +27,7 @@ impl EntrySet {
         self.entries.extend(extension.entries);
         self
     }
-    /// Returns an identifier for an Entry that is inside the EntrySet
+    /// Returns an identifier for an Entry that is inside the EntrySet.
     pub fn get_identifier_for_entry(&self, entry: &Entry) -> Option<String> {
         let entry_path = match entry {
             Entry::File(file) => file,
@@ -54,11 +55,11 @@ pub trait EntrySetFromPath {
 }
 
 impl<T: AsRef<Path>> EntrySetFromPath for T {
-    #[instrument(skip(self), fields(path=self.deref().as_ref().to_str().expect("Path should be a valid UTF-8 String")))]
+    #[instrument(skip(self), fields(path=self.deref().as_ref().to_str().expect("Path should be a valid UTF-8 String.")))]
     fn to_entry_set(&self) -> Option<EntrySet> {
         let path: &Path = self.deref().as_ref();
         if !path.exists() {
-            error!("Tried to map an inexistent Path to an EntrySet");
+            error!("Tried to map an inexistent Path to an EntrySet.");
             return None;
         }
         let mut result: EntrySet;
@@ -66,7 +67,7 @@ impl<T: AsRef<Path>> EntrySetFromPath for T {
             .get_first_child_named(UNDERSCORE_FILE_NAME)
             .and(path.to_entry())
         {
-            debug!("Found an UNDERSCORE file in Path. Mapping it to single Entry::Directory (or Entry::RenderingDirectory).");
+            debug!("Found an UNDERSCORE file in Path. Mapping it to a Directory (or RenderingDirectory).");
             result = EntrySet {
                 base_path: path.to_path_buf(),
                 entries: vec![path_entry],
@@ -97,8 +98,8 @@ impl<T: AsRef<Path>> EntrySetFromPath for T {
                 nested_path = n
                     .base_path
                     .to_str()
-                    .expect("Path should be a valid UTF-8 String"),
-                "Extending results with nested EntrySet"
+                    .expect("Path should be a valid UTF-8 String."),
+                "Extending results with nested EntrySet."
             );
             result.extend_entries(n);
         });
