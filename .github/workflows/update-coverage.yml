@@ -31,7 +31,7 @@ jobs:
           rustup component add llvm-tools-preview
       - name: Install GRCOV
         run: |-
-          cargo install grcov
+          cargo install grcov --force
       - name: Generate Coverage
         run: |-
           CARGO_INCREMENTAL=0 RUSTFLAGS='-Cinstrument-coverage' LLVM_PROFILE_FILE='cargo-test-%p-%m.profraw' cargo test --workspace
