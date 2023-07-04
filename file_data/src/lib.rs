@@ -29,6 +29,17 @@ pub(crate) trait FileTypeDataReader {
 }
 
 /// Allows files to be read into [JSON Values](serde_json::Value).
+///
+/// # Example
+/// ```
+/// # use testdir::testdir;
+/// # use path_utils::create_test_file;
+/// # use file_data::FileData;
+/// # use serde_json::json;
+/// # let dir = testdir!();
+/// let test_file = create_test_file(&dir.join("file.json"), "{\"a\": 1}");
+/// assert_eq!(test_file.try_read_file().unwrap(), json!({"a":1}))
+/// ```
 pub trait FileData {
     /// Attempts to read the file into a valid JSON Value.
     fn try_read_file(&self) -> Result<Value, FileDataError>;
