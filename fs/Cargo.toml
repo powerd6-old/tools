@@ -13,5 +13,6 @@ thiserror = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]
-testdir = { workspace = true }
 pretty_assertions = { workspace = true }
+testdir = { workspace = true }
+tracing-test = { workspace = true }

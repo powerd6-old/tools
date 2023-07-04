@@ -62,6 +62,7 @@ mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
     use testdir::testdir;
+    use tracing_test::traced_test;
 
     #[test]
     fn getting_identifier_of_sibling_files_returns_the_file_name() {
@@ -76,6 +77,7 @@ mod tests {
         )
     }
     #[test]
+    #[traced_test]
     fn getting_identifier_for_file_named_underscore_returns_its_parent_name() {
         let dir = testdir!();
 
@@ -85,7 +87,8 @@ mod tests {
         assert_eq!(
             underscore_file.get_id_from_path(&dir).unwrap(),
             String::from("a")
-        )
+        );
+        logs_contain("The path ended with a file named `_`. Using the ancestor path to create an identifier instead.");
     }
     #[test]
     fn identifier_of_deeply_nested_files_include_all_levels() {

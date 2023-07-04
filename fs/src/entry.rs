@@ -98,8 +98,10 @@ mod tests {
     use path_utils::{create_test_directory, create_test_file};
     use pretty_assertions::assert_eq;
     use testdir::testdir;
+    use tracing_test::traced_test;
 
     #[test]
+    #[traced_test]
     fn returns_file_when_file_named_exists() {
         let dir = testdir!();
 
@@ -111,6 +113,7 @@ mod tests {
             dir.has_entry_named(file_name.to_string()).unwrap(),
             Entry::File(named_file)
         );
+        logs_contain("Path is a file. Mapping to Entry::File.");
     }
 
     #[test]
@@ -127,6 +130,7 @@ mod tests {
     }
 
     #[test]
+    #[traced_test]
     fn returns_directory_when_named_subdirectory_exists_and_has_underscore_file() {
         let dir = testdir!();
 
@@ -145,5 +149,34 @@ mod tests {
                 extra_files: vec![an_extra_file]
             }
         );
+        logs_contain("Path is a directory with an UNDERSCORE file. Mapping to Entry::Directory.");
+    }
+
+    #[test]
+    #[traced_test]
+    fn returns_rendering_directory_when_named_subdirectory_exists_and_has_underscore_file_and_has_rendering_subdirectory(
+    ) {
+        let dir = testdir!();
+
+        let dir_name = "some_dir";
+
+        let some_dir = create_test_directory(&dir.join(dir_name));
+
+        let underscore_file =
+            create_test_file(&some_dir.join(format!("{}.json", UNDERSCORE_FILE_NAME)), "");
+        let an_extra_file = create_test_file(&some_dir.join("a.json"), "");
+
+        let rendering_dir = create_test_directory(&some_dir.join(RENDERING_DIRECTORY));
+        let rendering_template = create_test_file(&rendering_dir.join("md.hjs"), "");
+
+        assert_eq!(
+            dir.has_entry_named(dir_name.to_string()).unwrap(),
+            Entry::RenderingDirectory {
+                root_file: underscore_file,
+                extra_files: vec![an_extra_file],
+                rendering_files: vec![rendering_template]
+            }
+        );
+        logs_contain("Path is a directory with an UNDERSCORE file and RENDERING directory. Mapping to Entry::RenderingDirectory.");
     }
 }

@@ -150,6 +150,48 @@ mod tests {
     use testdir::testdir;
 
     #[test]
+    fn extending_module_types_sets_if_none() {
+        let mut module = Module {
+            title: "My title".to_string(),
+            description: "My description".to_string(),
+            source: Url::parse("https://powerd6.org").unwrap(),
+            types: None,
+            contents: None,
+        };
+
+        let new_types = BTreeMap::from([(
+            "a".to_string(),
+            ModuleType {
+                description: "my type".to_string(),
+                schema: None,
+                rendering: None,
+            },
+        )]);
+
+        module.extend_types(new_types);
+        assert!(module.types.is_some());
+    }
+
+    #[test]
+    fn extending_module_contents_sets_if_none() {
+        let mut module = Module {
+            title: "My title".to_string(),
+            description: "My description".to_string(),
+            source: Url::parse("https://powerd6.org").unwrap(),
+            types: None,
+            contents: None,
+        };
+
+        let new_contents = BTreeMap::from([(
+            "a".to_string(),
+            BTreeMap::from([("key".to_string(), Value::String("value".to_string()))]),
+        )]);
+
+        module.extend_contents(new_contents);
+        assert!(module.contents.is_some());
+    }
+
+    #[test]
     fn works_with_only_mandatory_files() {
         let dir = testdir!();
 
