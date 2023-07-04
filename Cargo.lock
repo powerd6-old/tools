@@ -314,6 +314,7 @@ dependencies = [
  "testdir",
  "thiserror",
  "tracing",
+ "tracing-test",
 ]
 
 [[package]]
