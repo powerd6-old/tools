@@ -26,7 +26,7 @@ impl<T: AsRef<Path> + Debug> NamePaths for T {
             .expect("Path name should be a valid UTF-8 String");
         match path.extension() {
             Some(extension) => {
-                debug!("Path has an extension, and it will be removed");
+                debug!("Path has an extension, and it will be removed.");
                 name.replace(
                     extension
                         .to_str()
@@ -37,7 +37,7 @@ impl<T: AsRef<Path> + Debug> NamePaths for T {
                 .to_string()
             }
             None => {
-                debug!("Path did not have an extension");
+                debug!("Path did not have an extension.");
                 name.to_string()
             }
         }
@@ -52,8 +52,10 @@ mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
     use testdir::testdir;
+    use tracing_test::traced_test;
 
     #[test]
+    #[traced_test]
     fn file_names_are_extracted_without_extension() {
         let dir = testdir!();
 
@@ -62,9 +64,11 @@ mod tests {
 
         assert_eq!(first.get_name_without_extension(), "first");
         assert_eq!(second.get_name_without_extension(), "second");
+        logs_contain("Path has an extension, and it will be removed.");
     }
 
     #[test]
+    #[traced_test]
     fn directory_names_are_extracted_unchanged() {
         let dir = testdir!();
 
@@ -73,6 +77,7 @@ mod tests {
 
         assert_eq!(first.get_name_without_extension(), "first");
         assert_eq!(second.get_name_without_extension(), "second");
+        logs_contain("Path did not have an extension.");
     }
 
     #[test]
