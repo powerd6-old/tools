@@ -1,42 +1,42 @@
-use serde::{Deserialize, Serialize};
+use fs::entry::Entry;
 use serde_json::Value;
-use std::collections::HashMap;
-use std::error::Error;
-use std::fmt::Display;
+use std::{collections::BTreeMap, error::Error};
 use thiserror::Error;
 
-const DESCRIPTION: &str = "description";
-
-// A identifier string. Must be unique within it's context.
-#[derive(Debug, Eq, Hash, PartialEq, Clone, PartialOrd, Ord, Serialize, Deserialize)]
-pub struct Identifier(String);
-
-impl From<String> for Identifier {
-    fn from(value: String) -> Self {
-        Identifier(value)
-    }
-}
-
-impl Display for Identifier {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-/// A generic object that contains data
-pub type JsonObject = HashMap<String, Value>;
-
-/// The errors that can happen when constructing a Module
+/// The errors that can happen when constructing a Module.
 #[derive(Error, Debug)]
 pub enum ModuleError {
-    #[error("unable to build element")]
-    UnableToBuildElement(#[from] Box<dyn Error>),
-    #[error("received value is not an object")]
-    NotAnObject,
-    #[error("missing required field `{0}`")]
-    MissingRequiredField(String),
+    #[error("received a value that was not an object `{0:#?}`")]
+    NotAnObject(Box<Value>),
+    #[error("unable to get the data for a required field")]
+    UnableToGetRequiredData(#[source] Box<dyn Error>),
+    #[error("a required field `{0}` was missing")]
+    MissingRequired(Box<str>),
+    #[error("the field is not of the expected type, instead found: `{0:#?}`")]
+    IncompatibleFieldType(Box<Value>),
+    #[error("Unable to create a valid identifier from entry: `{0:#?}`.")]
+    InvalidIdentifier(Box<Entry>),
 }
 
+/// The key to the contents property.
+pub const CONTENTS: &str = "contents";
+/// The key to the types property.
+pub const TYPES: &str = "types";
+/// The key to the description property.
+pub const DESCRIPTION: &str = "description";
+/// The key to the schema property.
+pub const SCHEMA: &str = "schema";
+/// The key to the rendering property.
+pub const RENDERING: &str = "rendering";
+/// The key to the title property.
+pub const TITLE: &str = "title";
+/// The key to the source property.
+pub const SOURCE: &str = "source";
+
+/// A generic JSON Map, similar to [serde's Value::Object](serde_json::Value::Object).
+type JsonMap = BTreeMap<String, Value>;
+
+/// Handles a Module.
 pub mod module;
+/// Handles a Type inside a Module.
 pub mod module_type;
-pub mod rendering;

@@ -1,18 +1,17 @@
 [package]
-name = "module"
-description = "A representation of powerd6 modules and their components."
+name = "file_data"
+description = "Handles reading files into valid data objects"
 version = "0.1.0"
 edition = { workspace = true }
 
 [dependencies]
-fs = { workspace = true }
-fs_data = { workspace = true }
-path_utils = { workspace = true }
-serde = { workspace = true, features = ["derive"] }
+pathdiff = { workspace = true }
 serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+strum = { workspace = true }
+strum_macros = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
-url = { workspace = true, features = ["serde"] }
 
 [dev-dependencies]
 path_utils = { workspace = true }

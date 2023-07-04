@@ -6,6 +6,8 @@
         "jsonschema",
         "pathdiff",
         "powerd6",
+        "Renderable",
+        "structs",
         "testdir",
         "thiserror"
     ],

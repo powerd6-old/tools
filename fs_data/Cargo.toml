@@ -1,20 +1,17 @@
 [package]
-name = "module"
-description = "A representation of powerd6 modules and their components."
+name = "fs_data"
+description = "Allows transformation of FileSystems into data"
 version = "0.1.0"
 edition = { workspace = true }
 
 [dependencies]
+file_data = { workspace = true }
 fs = { workspace = true }
-fs_data = { workspace = true }
 path_utils = { workspace = true }
-serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
-url = { workspace = true, features = ["serde"] }
 
 [dev-dependencies]
-path_utils = { workspace = true }
 testdir = { workspace = true }
 pretty_assertions = { workspace = true }

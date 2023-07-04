@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Moved common `Path` utilities to own `path_utils` crate
+- Refactor multiple functionality into their own independent crates
+
+### Fixed
+
+- When executing, errors will have enough details to debug issues
+- Code documentation is now complete
+
 ## [0.2.0] - 2023-06-24
 
 ### Added

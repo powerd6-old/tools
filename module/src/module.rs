@@ -1,114 +1,64 @@
-use crate::{module_type::ModuleType, JsonObject, ModuleError, DESCRIPTION};
+use fs::file_system::FileSystem;
+use fs_data::EntryData;
 
-use super::Identifier;
-
-use std::collections::{BTreeMap, HashMap};
-
-use fs::{data::FileSystemData, Entry, FileSystem};
-
-use serde::{ser, Deserialize, Serialize, Serializer};
-use tracing::{debug, instrument};
+use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
+use tracing::{info, instrument};
 use url::Url;
 
-const TITLE: &str = "title";
-const SOURCE: &str = "source";
-const TYPES: &str = "types";
-const CONTENTS: &str = "contents";
+use crate::{module_type::ModuleType, JsonMap, ModuleError};
 
-/// A document that contains information detailing and explaining rules and/or content, meant to be used for rendering by powerd6.
-/// This object does not perform validation into the values of each field and merely serves as a convenient way to manipulate already-built modules in rust.
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+/// A document that contains information for a powerd6 module.
+///
+/// While this object does not perform validation on it's own,
+/// it creates an uniform structure to do so.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Module {
     /// The title of the module.
-    pub title: String,
+    title: String,
     /// The human-readable description of what the module contains.
-    pub description: String,
+    description: String,
     /// A hyperlink to the where the module is hosted.
-    pub source: Url,
+    source: Url,
     /// A collection of types that are defined in this module.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub types: Option<BTreeMap<Identifier, ModuleType>>,
-    /// A collection of contents defined in this module, the keys of the map are the unique identifiers of the content pieces.
+    pub types: Option<BTreeMap<String, ModuleType>>,
+    /// A collection of contents defined in this module,
+    /// the keys of the map are the unique identifiers of the content pieces.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub content: Option<BTreeMap<Identifier, JsonObject>>,
+    pub contents: Option<BTreeMap<String, JsonMap>>,
 }
 
 impl Module {
-    pub fn new(title: String, description: String, source: Url) -> Self {
-        Module {
-            title,
-            description,
-            source,
-            types: None,
-            content: None,
+    /// Extends the module with the provided types.
+    ///
+    /// If the Module does not already have types, then the provided types will
+    /// simply be assigned. Otherwise, the provided types will be added,
+    /// replacing the existing types when the identifiers match.
+    fn extend_types(&mut self, mut extra_types: BTreeMap<String, ModuleType>) {
+        if self.types.is_none() {
+            self.types = Some(extra_types)
+        } else {
+            self.types
+                .as_mut()
+                .expect("Module should have types at this point")
+                .append(&mut extra_types);
         }
     }
-    pub fn with_types(mut self, types: BTreeMap<Identifier, ModuleType>) -> Self {
-        self.types = Some(types);
-        self
-    }
-    pub fn with_content(mut self, content: BTreeMap<Identifier, JsonObject>) -> Self {
-        self.content = Some(content);
-        self
-    }
-}
 
-impl TryFrom<Entry> for Module {
-    type Error = ModuleError;
-
-    #[instrument]
-    fn try_from(entry: Entry) -> Result<Self, Self::Error> {
-        match entry.try_get_data() {
-            Ok(value) => match value.as_object() {
-                Some(data) => match (
-                    data.get(TITLE).and_then(|r| r.as_str()),
-                    data.get(DESCRIPTION).and_then(|r| r.as_str()),
-                    data.get(SOURCE).and_then(|r| r.as_str()),
-                ) {
-                    (Some(title), Some(description), Some(source)) => match Url::parse(source) {
-                        Ok(source_url) => {
-                            let mut result =
-                                Module::new(title.to_string(), description.to_string(), source_url);
-                            if let Some(types) = data.get(TYPES).and_then(|t| t.as_object()) {
-                                let mut types_result: BTreeMap<Identifier, ModuleType> =
-                                    BTreeMap::new();
-                                for (key, value) in types {
-                                    match serde_json::from_value(value.clone()) {
-                                        Ok(type_value) => {
-                                            types_result.insert(key.to_owned().into(), type_value);
-                                        }
-                                        Err(e) => {
-                                            return Err(ModuleError::UnableToBuildElement(e.into()))
-                                        }
-                                    }
-                                }
-                                result = result.with_types(types_result);
-                            }
-                            if let Some(contents) = data.get(CONTENTS).and_then(|t| t.as_object()) {
-                                let mut contents_result: BTreeMap<Identifier, JsonObject> =
-                                    BTreeMap::new();
-                                for (key, value) in contents
-                                    .into_iter()
-                                    .filter_map(|(k, v)| Some(k).zip(v.as_object()))
-                                    .map(|(k, v)| (k.to_owned(), v.to_owned()))
-                                {
-                                    contents_result
-                                        .insert(key.into(), HashMap::from_iter(value.into_iter()));
-                                }
-                                result = result.with_content(contents_result);
-                            }
-                            Ok(result)
-                        }
-                        Err(e) => Err(ModuleError::UnableToBuildElement(e.into())),
-                    },
-                    _ => Err(ModuleError::MissingRequiredField(format!(
-                        "{}, {}, or {}",
-                        TITLE, DESCRIPTION, SOURCE
-                    ))),
-                },
-                None => Err(ModuleError::NotAnObject),
-            },
-            Err(e) => Err(ModuleError::UnableToBuildElement(e.into())),
+    /// Extends the module with the provided contents.
+    ///
+    /// If the Module does not already have contents, then the provided types
+    /// will simply be assigned. Otherwise, the provided contents will be added,
+    /// replacing the existing contents when the identifiers match.
+    fn extend_contents(&mut self, mut extra_contents: BTreeMap<String, JsonMap>) {
+        if self.contents.is_none() {
+            self.contents = Some(extra_contents)
+        } else {
+            self.contents
+                .as_mut()
+                .expect("Module should have contents at this point")
+                .append(&mut extra_contents);
         }
     }
 }
@@ -116,264 +66,230 @@ impl TryFrom<Entry> for Module {
 impl TryFrom<FileSystem> for Module {
     type Error = ModuleError;
 
-    #[instrument]
-    fn try_from(fs: FileSystem) -> Result<Self, Self::Error> {
-        match TryInto::<Module>::try_into(fs.module) {
-            Ok(mut module) => {
-                debug!("Parsed module metadata");
-                if let Some(fs_types) = fs.types {
-                    debug!("Found types in file system");
-                    let types_entries = fs_types.entries.clone().into_iter().filter_map(|e| {
-                        e.get_id_from_nested_path(&fs_types)
-                            .map(Identifier)
-                            .zip(TryInto::<ModuleType>::try_into(e).ok())
-                    });
-
-                    match module.types.as_ref() {
-                        None => module = module.with_types(types_entries.collect()),
-                        Some(types_from_module) => {
-                            debug!("Merging with types defined in base module");
-                            let mut merged_types: BTreeMap<Identifier, ModuleType> =
-                                BTreeMap::new();
-                            for (k, v) in types_from_module {
-                                merged_types.insert(k.clone(), v.clone());
-                            }
-                            for (k, v) in types_entries {
-                                merged_types.insert(k, v);
-                            }
-                            module = module.with_types(merged_types);
-                        }
+    #[instrument(skip(filesystem))]
+    fn try_from(filesystem: FileSystem) -> Result<Module, ModuleError> {
+        match filesystem.module.try_get_data() {
+            Ok(module_data) => match serde_json::from_value::<Module>(module_data.clone()) {
+                Ok(module) => {
+                    let mut result = module;
+                    if let Some(fs_types) = try_populate_types_from_filesystem(&filesystem)? {
+                        result.extend_types(fs_types)
                     }
+                    if let Some(fs_contents) = try_populate_contents_from_filesystem(&filesystem)? {
+                        result.extend_contents(fs_contents)
+                    }
+                    Ok(result)
                 }
-
-                if let Some(fs_contents) = fs.contents {
-                    debug!("Found contents in file system");
-                    let fs_content_data = fs_contents.entries.clone().into_iter().filter_map(|e| {
-                        e.get_id_from_nested_path(&fs_contents)
-                            .map(Identifier)
-                            .zip(e.try_get_data().ok())
-                    });
-
-                    let mut content_entries: BTreeMap<Identifier, JsonObject> = BTreeMap::new();
-                    for (identifier, data) in fs_content_data {
-                        match data.as_object() {
-                            Some(fs_content_data_map) => {
-                                content_entries.insert(
-                                    identifier,
-                                    JsonObject::from_iter(
-                                        fs_content_data_map
-                                            .into_iter()
-                                            .map(|(k, v)| (k.clone(), v.clone())),
-                                    ),
-                                );
-                            }
-                            None => return Err(ModuleError::NotAnObject),
-                        }
-                    }
-
-                    match module.content.as_ref() {
-                        None => module = module.with_content(content_entries),
-                        Some(content_from_module) => {
-                            debug!("Merging with contents defined in base module");
-                            let mut merged_content: BTreeMap<Identifier, JsonObject> =
-                                BTreeMap::new();
-                            for (k, v) in content_from_module {
-                                merged_content.insert(k.clone(), v.clone());
-                            }
-                            for (k, v) in content_entries {
-                                merged_content.insert(k.clone(), v.clone());
-                            }
-                            module = module.with_content(merged_content);
-                        }
-                    }
-                }
-
-                Ok(module)
-            }
-            Err(e) => Err(ModuleError::UnableToBuildElement(e.into())),
+                Err(_e) => Err(ModuleError::IncompatibleFieldType(module_data.into())),
+            },
+            Err(e) => Err(ModuleError::UnableToGetRequiredData(e.into())),
         }
     }
 }
 
+fn try_populate_types_from_filesystem(
+    filesystem: &FileSystem,
+) -> Result<Option<BTreeMap<String, ModuleType>>, ModuleError> {
+    if let Some(fs_types) = &filesystem.types {
+        let mut result: BTreeMap<String, ModuleType> = BTreeMap::new();
+        info!("Loading types from file system");
+        for type_entry in fs_types.entries.iter() {
+            match &fs_types.get_identifier_for_entry(type_entry) {
+                Some(identifier) => {
+                    let module_type = ModuleType::try_from(type_entry.clone())?;
+                    result.insert(identifier.to_string(), module_type);
+                }
+                None => {
+                    return Err(ModuleError::InvalidIdentifier(Box::new(type_entry.clone())));
+                }
+            }
+        }
+        return Ok(Some(result));
+    }
+    Ok(None)
+}
+
+fn try_populate_contents_from_filesystem(
+    filesystem: &FileSystem,
+) -> Result<Option<BTreeMap<String, JsonMap>>, ModuleError> {
+    if let Some(fs_contents) = &filesystem.contents {
+        let mut result: BTreeMap<String, JsonMap> = BTreeMap::new();
+        info!("Loading contents from file system");
+        for content_entry in fs_contents.entries.iter() {
+            match &fs_contents.get_identifier_for_entry(content_entry) {
+                Some(identifier) => {
+                    let content_data = content_entry
+                        .try_get_data()
+                        .map_err(|e| ModuleError::UnableToGetRequiredData(e.into()))?;
+                    let module_content = serde_json::from_value(content_data.clone())
+                        .or(Err(ModuleError::IncompatibleFieldType(content_data.into())))?;
+                    result.insert(identifier.to_string(), module_content);
+                }
+                None => {
+                    return Err(ModuleError::InvalidIdentifier(Box::new(
+                        content_entry.clone(),
+                    )));
+                }
+            }
+        }
+        return Ok(Some(result));
+    }
+    Ok(None)
+}
+
 #[cfg(test)]
 mod tests {
-    use std::{collections::BTreeMap, path::PathBuf};
 
     use super::*;
-    use fs::{CONTENTS_DIRECTORY, MODULE, TYPES_DIRECTORY};
+    use fs::CONTENTS_DIRECTORY;
+    use fs::TYPES_DIRECTORY;
+    use path_utils::create_test_directory;
+    use path_utils::create_test_file;
     use pretty_assertions::assert_eq;
     use serde_json::Value;
     use testdir::testdir;
 
-    fn create_file(path: &PathBuf, contents: &str) -> PathBuf {
-        std::fs::write(path, contents).expect("File could not be created");
-        path.to_path_buf()
-    }
-    fn create_directory(path: &PathBuf) -> PathBuf {
-        std::fs::create_dir(path).expect("Directory could not be created");
-        path.to_path_buf()
-    }
-
     #[test]
-    fn only_required_fields() {
+    fn works_with_only_mandatory_files() {
         let dir = testdir!();
 
-        assert_eq!(
-            Module::try_from(Entry::File(create_file(
-                &dir.join("test.json"),
-                r#"{
-                    "title": "title",
-                    "description": "description",
-                    "source": "https://my.source"
-                  }"#
-            )))
-            .unwrap(),
-            Module::new(
-                "title".to_string(),
-                "description".to_string(),
-                Url::parse("https://my.source").unwrap()
-            )
-        )
-    }
-
-    #[test]
-    fn with_types() {
-        let dir = testdir!();
-
-        assert_eq!(
-            Module::try_from(Entry::File(create_file(
-                &dir.join("test.json"),
-                r#"{
-                    "title": "title",
-                    "description": "description",
-                    "source": "https://my.source",
-                    "types": {
-                      "a": {
-                        "id": "a",
-                        "description": "my description"
-                      }
-                    }
-                  }"#
-            )))
-            .unwrap(),
-            Module::new(
-                "title".to_string(),
-                "description".to_string(),
-                Url::parse("https://my.source").unwrap()
-            )
-            .with_types(BTreeMap::from([(
-                Identifier("a".to_string()),
-                ModuleType::new("my description".to_string())
-            )]))
-        )
-    }
-
-    #[test]
-    fn with_contents() {
-        let dir = testdir!();
-
-        assert_eq!(
-            Module::try_from(Entry::File(create_file(
-                &dir.join("test.json"),
-                r#"{
-                    "title": "title",
-                    "description": "description",
-                    "source": "https://my.source",
-                    "contents": {
-                      "a": {
-                        "key": "value"
-                      }
-                    }
-                  }"#
-            )))
-            .unwrap(),
-            Module::new(
-                "title".to_string(),
-                "description".to_string(),
-                Url::parse("https://my.source").unwrap()
-            )
-            .with_content(BTreeMap::from([(
-                Identifier("a".to_string()),
-                JsonObject::from([("key".to_string(), Value::String("value".to_string()))])
-            )]))
-        )
-    }
-
-    #[test]
-    fn from_file_system() {
-        let dir = testdir!();
-
-        create_file(
-            &dir.join(format!("{}.json", MODULE)),
+        create_test_file(
+            &dir.join("module.json"),
             r#"{
-                "title": "title",
-                "description": "description",
-                "source": "https://my.source",
+            "title": "My title",
+            "description": "My description",
+            "source": "https://powerd6.org"
+        }"#,
+        );
+
+        assert_eq!(
+            Module::try_from(FileSystem::try_from(dir).unwrap()).unwrap(),
+            Module {
+                title: "My title".to_string(),
+                description: "My description".to_string(),
+                source: Url::parse("https://powerd6.org").unwrap(),
+                types: None,
+                contents: None
+            }
+        )
+    }
+
+    #[test]
+    fn types_are_populated_from_file_system_and_overwrite_types_from_module() {
+        let dir = testdir!();
+
+        create_test_file(
+            &dir.join("module.json"),
+            r#"{
+                "title": "My title",
+                "description": "My description",
+                "source": "https://powerd6.org",
                 "types": {
-                  "a": {
-                    "id": "a",
-                    "description": "my description"
-                  }
-                },
-                "contents": {
-                  "a": {
-                    "key": "value"
-                  }
+                    "a": {
+                        "description": "my type"
+                    }
                 }
-              }"#,
+            }"#,
         );
 
-        let types_dir = create_directory(&dir.join(TYPES_DIRECTORY));
-        create_file(
-            &types_dir.join("b.json"),
+        let types_directory = create_test_directory(&dir.join(TYPES_DIRECTORY));
+
+        create_test_file(
+            &types_directory.join("a.json"),
             r#"{
-                "id": "b",
-                "description": "my other description"
-              }"#,
+            "description": "my replaced type"
+        }"#,
         );
-
-        let contents_dir = create_directory(&dir.join(CONTENTS_DIRECTORY));
-        create_file(
-            &contents_dir.join("b.json"),
+        create_test_file(
+            &types_directory.join("b.json"),
             r#"{
-                "key": "value"
-              }"#,
+            "description": "my new type"
+        }"#,
         );
 
-        let file_system = FileSystem::try_from(dir)
-            .expect("Could not create FileSystem from temporary test directory");
-
-        let actual = Module::try_from(file_system).unwrap();
-        let expected = Module::new(
-            "title".to_string(),
-            "description".to_string(),
-            Url::parse("https://my.source").unwrap(),
+        assert_eq!(
+            Module::try_from(FileSystem::try_from(dir).unwrap()).unwrap(),
+            Module {
+                title: "My title".to_string(),
+                description: "My description".to_string(),
+                source: Url::parse("https://powerd6.org").unwrap(),
+                types: Some(BTreeMap::from([
+                    (
+                        "a".to_string(),
+                        ModuleType {
+                            description: "my replaced type".to_string(),
+                            schema: None,
+                            rendering: None
+                        }
+                    ),
+                    (
+                        "b".to_string(),
+                        ModuleType {
+                            description: "my new type".to_string(),
+                            schema: None,
+                            rendering: None
+                        }
+                    )
+                ])),
+                contents: None
+            }
         )
-        .with_types(BTreeMap::from([
-            (
-                Identifier("a".to_string()),
-                ModuleType::new("my description".to_string()),
-            ),
-            (
-                Identifier("b".to_string()),
-                ModuleType::new("my other description".to_string()),
-            ),
-        ]))
-        .with_content(BTreeMap::from([
-            (
-                Identifier("a".to_string()),
-                JsonObject::from([("key".to_string(), Value::String("value".to_string()))]),
-            ),
-            (
-                Identifier("b".to_string()),
-                JsonObject::from([("key".to_string(), Value::String("value".to_string()))]),
-            ),
-        ]));
+    }
 
-        assert_eq!(actual.title, expected.title);
-        assert_eq!(actual.description, expected.description);
-        assert_eq!(actual.source, expected.source);
-        assert_eq!(actual.types, expected.types);
-        assert_eq!(actual.content, expected.content);
+    #[test]
+    fn contents_are_populated_from_file_system_and_overwrite_contents_from_module() {
+        let dir = testdir!();
+
+        create_test_file(
+            &dir.join("module.json"),
+            r#"{
+                "title": "My title",
+                "description": "My description",
+                "source": "https://powerd6.org",
+                "contents": {
+                    "a": {
+                        "key": "value"
+                    }
+                }
+            }"#,
+        );
+
+        let contents_directory = create_test_directory(&dir.join(CONTENTS_DIRECTORY));
+
+        create_test_file(
+            &contents_directory.join("a.json"),
+            r#"{
+            "key": "replaced value"
+        }"#,
+        );
+        create_test_file(
+            &contents_directory.join("b.json"),
+            r#"{
+            "key": "value"
+        }"#,
+        );
+
+        assert_eq!(
+            Module::try_from(FileSystem::try_from(dir).unwrap()).unwrap(),
+            Module {
+                title: "My title".to_string(),
+                description: "My description".to_string(),
+                source: Url::parse("https://powerd6.org").unwrap(),
+                types: None,
+                contents: Some(BTreeMap::from([
+                    (
+                        "a".to_string(),
+                        BTreeMap::from([(
+                            "key".to_string(),
+                            Value::String("replaced value".to_string())
+                        )])
+                    ),
+                    (
+                        "b".to_string(),
+                        BTreeMap::from([("key".to_string(), Value::String("value".to_string()))])
+                    )
+                ]))
+            }
+        )
     }
 }
