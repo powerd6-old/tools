@@ -2,6 +2,8 @@
 
 A collection of tools to support the creation of the [powerd6](https://powerd6.org/) system.
 
+[![codecov](https://codecov.io/gh/powerd6/tools/branch/main/graph/badge.svg?token=MUANsND3Wo)](https://codecov.io/gh/powerd6/tools)
+
 ## Usage
 
 `cargo install --git https://github.com/powerd6/tools` if you haven't cloned this repository, or simply `cargo install` if you have.
