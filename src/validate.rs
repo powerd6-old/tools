@@ -5,8 +5,7 @@ use module::TYPE_KEY;
 use serde_json::{json, Value};
 use std::io::BufReader;
 use std::{error::Error, fs::File, path::PathBuf};
-use thiserror::Error;
-use tracing::{debug, debug_span, error, info, instrument};
+use tracing::{debug, error, info, instrument};
 
 const MODULE_SCHEMA: &str = "https://specification.powerd6.org/schemas/module.json";
 const CONTENT_SCHEMA: &str = "https://specification.powerd6.org/schemas/content.json";
@@ -18,20 +17,6 @@ pub struct ValidateArguments {
     /// The path to the module to be rendered.
     #[arg(required = true)]
     source: PathBuf,
-}
-
-/// The errors that can happen when validating a Module.
-#[derive(Error, Debug)]
-pub enum ValidationError<'a> {
-    #[error("found issues validating the module")]
-    ModuleValidationFailed {
-        errors: Vec<jsonschema::ValidationError<'a>>,
-    },
-    #[error("found issues validating a content piece")]
-    ContentPieceFailed {
-        content_id: String,
-        errors: Vec<jsonschema::ValidationError<'a>>,
-    },
 }
 
 /// Executes the [Validate](crate::Commands::Validate) command.
