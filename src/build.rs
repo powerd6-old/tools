@@ -1,9 +1,3 @@
-extern crate clap;
-extern crate fs;
-extern crate module;
-extern crate tracing;
-extern crate tracing_subscriber;
-
 use clap::{Args, ValueEnum};
 use fs::file_system::FileSystem;
 use module::module::Module;

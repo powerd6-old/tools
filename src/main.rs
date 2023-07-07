@@ -1,7 +1,10 @@
 extern crate clap;
 extern crate fs;
+extern crate jsonschema;
 extern crate module;
 extern crate module_render;
+extern crate serde_json;
+extern crate thiserror;
 extern crate tracing;
 extern crate tracing_subscriber;
 
