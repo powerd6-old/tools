@@ -32,6 +32,8 @@ pub const RENDERING: &str = "rendering";
 pub const TITLE: &str = "title";
 /// The key to the source property.
 pub const SOURCE: &str = "source";
+/// The key to the type property.
+pub const TYPE_KEY: &str = "type";
 
 /// A generic JSON Map, similar to [serde's Value::Object](serde_json::Value::Object).
 type JsonMap = BTreeMap<String, Value>;
