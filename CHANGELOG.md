@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `validate` command that runs all necessary schema validations on modules, types and their contents
+
 ### Changed
 
 - Code coverage now covers some essential debugging traces

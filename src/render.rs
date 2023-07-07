@@ -1,21 +1,13 @@
-extern crate clap;
-extern crate fs;
-extern crate module;
-extern crate module_render;
-extern crate thiserror;
-extern crate tracing;
-extern crate tracing_subscriber;
-
 use clap::Args;
 use module_render::module::RenderableModule;
 use module_render::renderer::ModuleRenderer;
 
-use self::thiserror::Error;
 use module::module::Module;
 use std::error::Error;
 use std::io::BufReader;
 use std::io::Write;
 use std::{ffi::OsString, fs::File, path::PathBuf};
+use thiserror::Error;
 use tracing::{debug, error, info, instrument};
 
 /// Renders a module with a specific format.
