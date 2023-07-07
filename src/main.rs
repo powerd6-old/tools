@@ -12,6 +12,7 @@ use clap::{Parser, Subcommand};
 
 use render::RenderArguments;
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
+use validate::ValidateArguments;
 
 /// The entry point of the CLI execution.
 fn main() -> Result<(), Box<dyn Error>> {
@@ -27,6 +28,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     match args.command {
         Commands::Build(args) => build::run(args),
         Commands::Render(args) => render::run(args),
+        Commands::Validate(args) => validate::run(args),
     }
 }
 
@@ -43,9 +45,12 @@ struct Cli {
 enum Commands {
     Build(BuildArguments),
     Render(RenderArguments),
+    Validate(ValidateArguments),
 }
 
 /// Implements the [Build](crate::Commands::Build) command.
 pub mod build;
 /// Implements the [Render](crate::Commands::Render) command.
 pub mod render;
+/// Implements the [Validate](crate::Commands::Validate) command.
+pub mod validate;
